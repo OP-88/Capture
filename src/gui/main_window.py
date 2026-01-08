@@ -173,7 +173,7 @@ class MainWindow(QMainWindow):
                 # Add to database
                 screenshot = self.db_manager.add_screenshot(
                     str(vault_path),
-                    metadata=metadata
+                    image_metadata=metadata
                 )
                 
                 if screenshot:

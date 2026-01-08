@@ -235,13 +235,6 @@ Capture/
 
 GNU General Public License v3.0 - See LICENSE for details
 
-## 👤 Author
-
-**OP-88** - Security Researcher & Systems Engineer
-
-- Website: [op-88.github.io](https://op-88.github.io)
-- GitHub: [@OP-88](https://github.com/OP-88)
-
 ## 🙏 Acknowledgments
 
 - Built for the cybersecurity and DevOps community

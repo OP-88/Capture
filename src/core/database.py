@@ -24,7 +24,7 @@ class Screenshot(Base):
     import_date = Column(DateTime, default=datetime.utcnow, nullable=False)
     last_modified = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     tags = Column(String(512), default='')  # Comma-separated tags
-    metadata = Column(JSON, default={})  # Store width, height, file_size, etc.
+    image_metadata = Column(JSON, default={})  # Store width, height, file_size, etc.
     sanitization_log = Column(Text, nullable=True)  # Log of PII redactions
     
     def __repr__(self):
@@ -53,7 +53,7 @@ class DatabaseManager:
     def add_screenshot(
         self,
         original_path: str,
-        metadata: dict = None,
+        image_metadata: dict = None,
         tags: str = ''
     ) -> Optional[Screenshot]:
         """
@@ -61,7 +61,7 @@ class DatabaseManager:
         
         Args:
             original_path: Path to original image
-            metadata: Image metadata dictionary
+            image_metadata: Image metadata dictionary
             tags: Comma-separated tags
             
         Returns:
@@ -71,7 +71,7 @@ class DatabaseManager:
         try:
             screenshot = Screenshot(
                 original_path=original_path,
-                metadata=metadata or {},
+                image_metadata=image_metadata or {},
                 tags=tags
             )
             session.add(screenshot)

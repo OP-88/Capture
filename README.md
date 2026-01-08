@@ -52,6 +52,48 @@ In high-stakes security audits and full-stack development, the "screenshot" is t
 
 ## 🔧 Installation
 
+### Quick Start
+
+**For development/testing:**
+```bash
+git clone https://github.com/OP-88/Capture.git
+cd Capture
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python run.py
+```
+
+### RPM Package (Recommended for Production)
+
+**Build and install as a standalone application:**
+
+```bash
+# Clone the repository
+git clone https://github.com/OP-88/Capture.git
+cd Capture
+
+# Install system dependencies
+sudo dnf install -y python3 tesseract tesseract-langpack-eng file-libs
+
+# Build the RPM package
+./build-rpm.sh
+
+# Install Capture
+sudo dnf install ./capture-1.0.0-1.*.noarch.rpm
+
+# Run from anywhere
+capture
+```
+
+The RPM package installs Capture as a system application with:
+- Desktop menu integration
+- Standalone executable (`capture` command)
+- Proper dependency management
+- System-wide installation
+
+For detailed installation instructions, see [INSTALL.md](INSTALL.md).
+
 ### Prerequisites
 
 **Fedora Linux:**
@@ -63,7 +105,7 @@ sudo dnf install -y python3 python3-pip tesseract libmagic
 sudo dnf install -y tesseract-langpack-eng
 ```
 
-### Setup
+### Manual Setup (Development)
 
 1. **Clone the repository:**
 ```bash

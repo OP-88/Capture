@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📸 Capture
+#  Capture
 
 <p align="center">
   <img src="capture_icon.png" alt="Capture Icon" width="200"/>

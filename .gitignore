@@ -1,0 +1,34 @@
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Ignore virtual environment
+venv/
+env/
+ENV/
+
+# Ignore data directory (user-specific)
+data/
+
+# Ignore build artifacts
+build/
+dist/
+*.egg-info/
+*.rpm
+*.tar.gz
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore RPM build directory
+~/rpmbuild/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db

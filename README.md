@@ -1,4 +1,6 @@
-# Capture
+<div align="center">
+
+# 📸 Capture
 
 <p align="center">
   <img src="capture_icon.png" alt="Capture Icon" width="200"/>
@@ -6,7 +8,29 @@
 
 **A Local-First Screenshot Enhancement & Library Tool for Security Professionals**
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Platform](https://img.shields.io/badge/Platform-Linux-orange.svg)](https://github.com/OP-88/Capture)
+[![Python](https://img.shields.io/badge/Python-3.12+-green.svg)](https://www.python.org/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/OP-88/Capture/release.yml?branch=main)](https://github.com/OP-88/Capture/actions)
+
 > Built on Fedora GNOME | Designed for Cybersecurity Documentation | Zero Cloud Dependencies
+
+</div>
+
+---
+
+## ⚡ Quick Feature Highlights
+
+<table>
+<tr>
+<td width="25%" align="center">🎨<br/><b>Granular Adjustments</b><br/>Brightness, Contrast, Saturation, Sharpness</td>
+<td width="25%" align="center">🔒<br/><b>PII Sanitization</b><br/>Auto-detect & redact sensitive data</td>
+<td width="25%" align="center">📚<br/><b>Library Management</b><br/>Grid view with search & tagging</td>
+<td width="25%" align="center">💻<br/><b>100% Local</b><br/>Zero cloud uploads, complete privacy</td>
+</tr>
+</table>
+
+---
 
 ## 🎯 The Problem
 
@@ -17,6 +41,8 @@ In high-stakes security audits and full-stack development, the "screenshot" is t
 - **Cloud Security Risks**: Most beautifiers require uploading sensitive codebase captures
 - **Poor Organization**: No forensic tracking or chain-of-custody
 
+---
+
 ## 🚀 The Solution
 
 **Capture** is a forensic-grade desktop application that:
@@ -25,6 +51,8 @@ In high-stakes security audits and full-stack development, the "screenshot" is t
 2. **Sanitizes PII**: Automatic detection and redaction of sensitive data
 3. **Maintains Chain-of-Custody**: Tracks original vs. modified versions
 4. **100% Local**: Zero cloud uploads, all processing happens on your machine
+
+---
 
 ## ✨ Features
 
@@ -64,6 +92,8 @@ In high-stakes security audits and full-stack development, the "screenshot" is t
 - **💾 Export**: Save as PNG/JPEG with EXIF metadata stripped
 - **🔒 Secure**: All exports sanitized and anonymized
 
+---
+
 ## 🔧 Installation
 
 ### Quick Start
@@ -93,7 +123,7 @@ sudo dnf install -y python3 tesseract tesseract-langpack-eng file-libs
 # Build the RPM package
 ./build-rpm.sh
 
-# Install Capture
+# Install Capture (replace with latest version from releases)
 sudo dnf install ./capture-1.0.2-1.*.noarch.rpm
 
 # Run from anywhere
@@ -143,6 +173,27 @@ pip install -r requirements.txt
 python run.py
 ```
 
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+### Main Interface
+*Grid-based screenshot library with dark GNOME theme*
+
+### Adjustment Panel
+*Google Photos-style controls for brightness, contrast, saturation, and sharpness*
+
+### PII Sanitization
+*Automatic detection and redaction of sensitive data (IPs, API keys, emails)*
+
+> **Note:** The application features a fully dark-themed interface that integrates seamlessly with GNOME's aesthetic.
+
+</div>
+
+---
+
 ## 📖 Usage
 
 ### Importing Screenshots
@@ -173,6 +224,8 @@ python run.py
 - **Clipboard**: Click **📋 Copy to Clipboard**, then paste anywhere
 - **File**: Click **💾 Export**, choose format and location
 
+---
+
 ## 🔐 Security Features
 
 ### 1. Local-First Processing
@@ -200,6 +253,8 @@ python run.py
 - No shell command execution (`shell=True` is never used)
 - Secure file handling throughout
 
+---
+
 ## 🏗️ Architecture
 
 ```
@@ -226,6 +281,8 @@ Capture/
 └── run.py                   # Launch script
 ```
 
+---
+
 ## 🧪 Tech Stack
 
 - **Backend**: Python 3.12+
@@ -234,6 +291,8 @@ Capture/
 - **Image Processing**: OpenCV + Pillow
 - **OCR**: Tesseract (pytesseract)
 - **Security**: python-magic, regex validation
+
+---
 
 ## 🛣️ Roadmap
 
@@ -245,9 +304,49 @@ Capture/
 - [ ] Keyboard shortcuts
 - [ ] Dark mode toggle
 
+<div align="center">
+
+## 🤝 Contributing
+
+**We Welcome All Developers!** 
+
+</div>
+
+**Capture** is an open-source project built for the community, by the community. Whether you're a security researcher, a Python developer, a UI/UX enthusiast, or just someone with a great idea - **your contributions are warmly welcomed!**
+
+<div align="center">
+
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/OP-88/Capture/pulls)
+[![Contributors](https://img.shields.io/github/contributors/OP-88/Capture)](https://github.com/OP-88/Capture/graphs/contributors)
+[![Issues](https://img.shields.io/github/issues/OP-88/Capture)](https://github.com/OP-88/Capture/issues)
+
+⭐ **If you find Capture useful, please star the repository!** It helps others discover the project.
+
+</div>
+
+### How to Contribute
+
+1. **Fork the repository** and create a feature branch
+2. **Make your changes** with clear, descriptive commit messages
+3. **Test thoroughly** on Fedora GNOME (or your Linux distribution)
+4. **Submit a pull request** with a description of what you've improved
+
+### Guidelines
+
+- Follow the existing code style (PEP 8 for Python)
+- Maintain the local-first, security-focused philosophy
+- Add tests for new features when applicable
+- Update documentation for user-facing changes
+
+**Found a bug or have a feature idea?** Open an issue on GitHub! We appreciate all feedback.
+
+---
+
 ## 📝 License
 
 GNU General Public License v3.0 - See LICENSE for details
+
+---
 
 ## 🙏 Acknowledgments
 
@@ -258,7 +357,16 @@ GNU General Public License v3.0 - See LICENSE for details
 ---
 
 **Philosophy:**
-> 1. Local is King: Nothing leaves the machine
-> 2. Clarity is Truth: If you can't read it, it failed
-> 3. Developer-Focused: Understands code and terminal aesthetics
-> 4. Chain of Custody: Maintains integrity for documentation
+
+> **🔒 Local is King**: Nothing leaves the machine  
+> **✨ Clarity is Truth**: If you can't read it, it failed  
+> **💻 Developer-Focused**: Understands code and terminal aesthetics  
+> **📋 Chain of Custody**: Maintains integrity for documentation
+
+<div align="center">
+
+---
+
+**Made with ❤️ for the Security Community**
+
+</div>

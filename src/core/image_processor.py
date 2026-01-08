@@ -190,3 +190,74 @@ class ImageProcessor:
         """
         rgb = np.array(pil_image)
         return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+
+    @staticmethod
+    def apply_manual_adjustments(
+        image_array: np.ndarray,
+        brightness: int = 0,
+        contrast: int = 0,
+        saturation: int = 0,
+        sharpness: int = 0
+    ) -> np.ndarray:
+        """
+        Apply manual adjustments using slider values.
+        
+        Args:
+            image_array: Original image as numpy array
+            brightness: Brightness adjustment (-100 to +100)
+            contrast: Contrast adjustment (-100 to +100)
+            saturation: Saturation adjustment (-100 to +100)
+            sharpness: Sharpness adjustment (0 to +100)
+            
+        Returns:
+            Adjusted image as numpy array
+        """
+        try:
+            result = image_array.copy()
+            
+            # 1. Apply Brightness & Contrast
+            # Map slider range to OpenCV parameters
+            # Contrast: -100 to +100 -> alpha: 0.5 to 3.0
+            # Brightness: -100 to +100 -> beta: -100 to +100
+            if brightness != 0 or contrast != 0:
+                # Calculate alpha (contrast multiplier)
+                alpha = 1.0 + (contrast / 100.0) * 2.0  # Range: 0.5 to 3.0
+                alpha = max(0.1, min(alpha, 5.0))  # Clamp for safety
+                
+                # Beta is brightness offset
+                beta = brightness
+                
+                result = cv2.convertScaleAbs(result, alpha=alpha, beta=beta)
+            
+            # 2. Apply Saturation
+            if saturation != 0:
+                # Convert to HSV color space
+                hsv = cv2.cvtColor(result, cv2.COLOR_BGR2HSV).astype(np.float32)
+                
+                # Scale the S (saturation) channel
+                # Map -100 to +100 -> 0.0 to 2.0 multiplier
+                sat_scale = 1.0 + (saturation / 100.0)
+                sat_scale = max(0.0, min(sat_scale, 3.0))  # Clamp
+                
+                hsv[:, :, 1] = hsv[:, :, 1] * sat_scale
+                hsv[:, :, 1] = np.clip(hsv[:, :, 1], 0, 255)
+                
+                # Convert back to BGR
+                result = cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+            
+            # 3. Apply Sharpness (Unsharp Mask)
+            if sharpness > 0:
+                # Map 0-100 to strength 0.0-2.0
+                strength = (sharpness / 100.0) * 2.0
+                
+                # Apply Gaussian blur
+                gaussian = cv2.GaussianBlur(result, (0, 0), 2.0)
+                
+                # Unsharp mask: original + (original - blurred) * strength
+                result = cv2.addWeighted(result, 1.0 + strength, gaussian, -strength, 0)
+            
+            return result
+            
+        except Exception as e:
+            print(f"Error applying manual adjustments: {e}")
+            return image_array

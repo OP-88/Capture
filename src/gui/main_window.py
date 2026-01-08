@@ -12,6 +12,7 @@ import cv2
 import numpy as np
 
 from src.gui.library_view import LibraryView
+from src.gui.adjustment_panel import AdjustmentPanel
 from src.gui.styles import get_dark_theme
 from src.core.database import DatabaseManager, Screenshot
 from src.core.image_processor import ImageProcessor
@@ -34,6 +35,7 @@ class MainWindow(QMainWindow):
         
         self.current_screenshot: Screenshot = None
         self.current_image: np.ndarray = None
+        self.original_image: np.ndarray = None  # Store original for reset
         
         self.init_ui()
         self.load_library()
@@ -59,7 +61,7 @@ class MainWindow(QMainWindow):
         self.library_view.screenshot_selected.connect(self.on_screenshot_selected)
         splitter.addWidget(self.library_view)
         
-        # Preview panel (right side)
+        # Preview panel (center)
         preview_widget = QWidget()
         preview_layout = QVBoxLayout(preview_widget)
         
@@ -90,8 +92,18 @@ class MainWindow(QMainWindow):
         preview_layout.addLayout(button_layout)
         
         splitter.addWidget(preview_widget)
-        splitter.setStretchFactor(0, 1)
-        splitter.setStretchFactor(1, 1)
+        
+        # Adjustment panel (right side)
+        self.adjustment_panel = AdjustmentPanel()
+        self.adjustment_panel.adjustments_changed.connect(self.on_adjustments_changed)
+        self.adjustment_panel.reset_requested.connect(self.on_reset_adjustments)
+        self.adjustment_panel.setMaximumWidth(320)
+        self.adjustment_panel.set_enabled(False)
+        splitter.addWidget(self.adjustment_panel)
+        
+        splitter.setStretchFactor(0, 1)  # Library
+        splitter.setStretchFactor(1, 2)  # Preview (larger)
+        splitter.setStretchFactor(2, 0)  # Adjustments (fixed width)
         
         main_layout.addWidget(splitter)
         
@@ -199,6 +211,7 @@ class MainWindow(QMainWindow):
         # Load image
         image_path = self.current_screenshot.modified_path or self.current_screenshot.original_path
         self.current_image = cv2.imread(image_path)
+        self.original_image = self.current_image.copy()  # Store original
         
         if self.current_image is None:
             QMessageBox.critical(self, "Error", "Failed to load image")
@@ -207,10 +220,14 @@ class MainWindow(QMainWindow):
         # Display preview
         self.display_preview(self.current_image)
         
-        # Enable action buttons
+        # Enable action buttons and adjustment panel
         self.sharpen_btn.setEnabled(True)
         self.sanitize_btn.setEnabled(True)
         self.copy_btn.setEnabled(True)
+        self.adjustment_panel.set_enabled(True)
+        
+        # Reset adjustments to default
+        self.adjustment_panel.reset_adjustments()
         
         # Update status
         filename = Path(image_path).name
@@ -360,3 +377,47 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, "Success", "Image exported successfully!")
         else:
             QMessageBox.critical(self, "Error", "Failed to export image")
+    
+    def on_adjustments_changed(self, adjustments: dict):
+        """
+        Handle real-time adjustment changes.
+        
+        Args:
+            adjustments: Dictionary of adjustment values
+        """
+        if self.original_image is None:
+            return
+        
+        # Apply adjustments to original image (not compounding)
+        adjusted = self.image_processor.apply_manual_adjustments(
+            self.original_image,
+            brightness=adjustments['brightness'],
+            contrast=adjustments['contrast'],
+            saturation=adjustments['saturation'],
+            sharpness=adjustments['sharpness']
+        )
+        
+        # Update current image and preview
+        self.current_image = adjusted
+        self.display_preview(adjusted)
+        
+        # Update status
+        active_adjustments = [k for k, v in adjustments.items() if v != 0]
+        if active_adjustments:
+            status_msg = f"Active adjustments: {', '.join(active_adjustments)}"
+            self.status_bar.showMessage(status_msg)
+        else:
+            self.status_bar.showMessage("No adjustments applied")
+    
+    def on_reset_adjustments(self):
+        """
+        Reset adjustments and restore original image.
+        """
+        if self.original_image is None:
+            return
+        
+        # Restore original image
+        self.current_image = self.original_image.copy()
+        self.display_preview(self.current_image)
+        
+        self.status_bar.showMessage("Adjustments reset")

@@ -36,6 +36,9 @@ class MainWindow(QMainWindow):
         self.current_screenshot: Screenshot = None
         self.current_image: np.ndarray = None
         self.original_image: np.ndarray = None  # Store original for reset
+        self.working_image: np.ndarray = None  # Accumulates all changes (adjustments + sanitization)
+        self.current_adjustments: dict = {'brightness': 0, 'contrast': 0, 'saturation': 0, 'sharpness': 0}
+        self.sanitized_regions: list = []  # Store PII regions for re-application
         
         self.init_ui()
         self.load_library()
@@ -59,6 +62,7 @@ class MainWindow(QMainWindow):
         # Library view (left side)
         self.library_view = LibraryView()
         self.library_view.screenshot_selected.connect(self.on_screenshot_selected)
+        self.library_view.screenshot_delete_requested.connect(self.delete_screenshot)
         splitter.addWidget(self.library_view)
         
         # Preview panel (center)
@@ -88,6 +92,11 @@ class MainWindow(QMainWindow):
         self.copy_btn.clicked.connect(self.copy_to_clipboard)
         self.copy_btn.setEnabled(False)
         button_layout.addWidget(self.copy_btn)
+        
+        self.download_btn = QPushButton("💾 Download to Pictures")
+        self.download_btn.clicked.connect(self.download_to_pictures)
+        self.download_btn.setEnabled(False)
+        button_layout.addWidget(self.download_btn)
         
         preview_layout.addLayout(button_layout)
         
@@ -212,6 +221,8 @@ class MainWindow(QMainWindow):
         image_path = self.current_screenshot.modified_path or self.current_screenshot.original_path
         self.current_image = cv2.imread(image_path)
         self.original_image = self.current_image.copy()  # Store original
+        self.working_image = self.current_image.copy()  # Initialize working copy
+        self.sanitized_regions = []  # Reset sanitized regions
         
         if self.current_image is None:
             QMessageBox.critical(self, "Error", "Failed to load image")
@@ -224,6 +235,7 @@ class MainWindow(QMainWindow):
         self.sharpen_btn.setEnabled(True)
         self.sanitize_btn.setEnabled(True)
         self.copy_btn.setEnabled(True)
+        self.download_btn.setEnabled(True)
         self.adjustment_panel.set_enabled(True)
         
         # Reset adjustments to default
@@ -380,7 +392,7 @@ class MainWindow(QMainWindow):
     
     def on_adjustments_changed(self, adjustments: dict):
         """
-        Handle real-time adjustment changes.
+        Handle real-time adjustment changes with cumulative editing support.
         
         Args:
             adjustments: Dictionary of adjustment values
@@ -388,7 +400,10 @@ class MainWindow(QMainWindow):
         if self.original_image is None:
             return
         
-        # Apply adjustments to original image (not compounding)
+        # Store current adjustments
+        self.current_adjustments = adjustments
+        
+        # Apply adjustments to original image
         adjusted = self.image_processor.apply_manual_adjustments(
             self.original_image,
             brightness=adjustments['brightness'],
@@ -397,7 +412,8 @@ class MainWindow(QMainWindow):
             sharpness=adjustments['sharpness']
         )
         
-        # Update current image and preview
+        # Update working image and current image
+        self.working_image = adjusted.copy()
         self.current_image = adjusted
         self.display_preview(adjusted)
         
@@ -413,11 +429,76 @@ class MainWindow(QMainWindow):
         """
         Reset adjustments and restore original image.
         """
-        if self.original_image is None:
-            return
-        
-        # Restore original image
+        # Restore original image and working copy
         self.current_image = self.original_image.copy()
+        self.working_image = self.original_image.copy()
+        self.current_adjustments = {'brightness': 0, 'contrast': 0, 'saturation': 0, 'sharpness': 0}
         self.display_preview(self.current_image)
         
         self.status_bar.showMessage("Adjustments reset")
+    
+    def delete_screenshot(self, screenshot_id: int):
+        """
+        Delete a screenshot from library and filesystem.
+        
+        Args:
+            screenshot_id: ID of screenshot to delete
+        """
+        reply = QMessageBox.question(
+            self, "Delete Screenshot",
+            "Delete this screenshot? This cannot be undone.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            screenshot = self.db_manager.get_screenshot(screenshot_id)
+            if screenshot:
+                # Delete files from vault
+                try:
+                    Path(screenshot.original_path).unlink(missing_ok=True)
+                    if screenshot.modified_path:
+                        Path(screenshot.modified_path).unlink(missing_ok=True)
+                except Exception as e:
+                    print(f"Error deleting files: {e}")
+                
+                # Remove from database
+                if self.db_manager.delete_screenshot(screenshot_id):
+                    self.status_bar.showMessage("Screenshot deleted")
+                    # Reload library
+                    self.load_library()
+                    # Clear preview if deleted screenshot was selected
+                    if self.current_screenshot and self.current_screenshot.id == screenshot_id:
+                        self.current_screenshot = None
+                        self.current_image = None
+                        self.original_image = None
+                        self.working_image = None
+                        self.preview_label.clear()
+                        self.preview_label.setText("Select a screenshot to preview")
+                else:
+                    QMessageBox.critical(self, "Error", "Failed to delete screenshot from database")
+    
+    def download_to_pictures(self):
+        """Download current working image to ~/Pictures/Capture/"""
+        if self.working_image is None:
+            return
+        
+        # Create Capture folder in Pictures
+        from datetime import datetime
+        pictures_dir = Path.home() / "Pictures" / "Capture"
+        pictures_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"capture_{timestamp}.png"
+        save_path = pictures_dir / filename
+        
+        # Save with EXIF stripping (use working_image which has all edits)
+        if self.exporter.save_with_exif_strip(self.working_image, save_path, 'PNG'):
+            self.status_bar.showMessage(f"Downloaded to {save_path}")
+            QMessageBox.information(
+                self, "Success",
+                f"Image saved to:\n{save_path}"
+            )
+        else:
+            QMessageBox.critical(self, "Error", "Failed to download image")
+

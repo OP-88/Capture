@@ -3,7 +3,7 @@ Library/Vault view for Capture.
 Displays screenshot gallery in grid layout with thumbnails.
 """
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QListWidget,
-                              QListWidgetItem, QLabel, QPushButton, QLineEdit)
+                              QListWidgetItem, QLabel, QPushButton, QLineEdit, QMenu)
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from PyQt6.QtGui import QPixmap, QImage, QIcon
 from pathlib import Path
@@ -19,6 +19,7 @@ class LibraryView(QWidget):
     # Signals
     screenshot_selected = pyqtSignal(int)  # Emits screenshot ID
     screenshot_double_clicked = pyqtSignal(int)
+    screenshot_delete_requested = pyqtSignal(int)  # Emits screenshot ID for deletion
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -102,6 +103,18 @@ class LibraryView(QWidget):
         item.setData(Qt.ItemDataRole.UserRole, screenshot.id)
         
         self.grid_widget.addItem(item)
+    
+    def contextMenuEvent(self, event):
+        """Show context menu on right-click."""
+        item = self.grid_widget.itemAt(self.grid_widget.mapFromGlobal(event.globalPos()))
+        if item:
+            menu = QMenu(self)
+            delete_action = menu.addAction("🗑️ Delete Photo")
+            
+            action = menu.exec(event.globalPos())
+            if action == delete_action:
+                screenshot_id = item.data(Qt.ItemDataRole.UserRole)
+                self.screenshot_delete_requested.emit(screenshot_id)
     
     def create_thumbnail(self, image_path: str) -> QPixmap:
         """

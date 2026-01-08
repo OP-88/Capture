@@ -163,26 +163,51 @@ class DatabaseManager:
         finally:
             session.close()
     
-    def delete_screenshot(self, screenshot_id: int) -> bool:
+    def get_all_screenshots(self, tag: str = None) -> List[Screenshot]:
         """
-        Delete screenshot from database.
+        Get all screenshots, optionally filtered by tag.
         
         Args:
-            screenshot_id: Screenshot ID
+            tag: Optional tag to filter by
+            
+        Returns:
+            List of Screenshot objects
+        """
+        try:
+            with self.SessionLocal() as session:
+                query = session.query(Screenshot).order_by(Screenshot.import_date.desc())
+                
+                if tag:
+                    query = query.filter(Screenshot.tags.contains(tag))
+                
+                screenshots = query.all()
+                
+                # Detach from session to prevent expiration
+                session.expunge_all()
+                return screenshots
+        except Exception as e:
+            print(f"Error fetching screenshots: {e}")
+            return []
+    
+    def delete_screenshot(self, screenshot_id: int) -> bool:
+        """
+        Delete a screenshot from the database.
+        
+        Args:
+            screenshot_id: ID of screenshot to delete
             
         Returns:
             True if successful, False otherwise
         """
-        session = self.get_session()
         try:
-            screenshot = session.query(Screenshot).filter_by(id=screenshot_id).first()
-            if screenshot:
-                session.delete(screenshot)
-                session.commit()
-                return True
-            return False
+            with self.SessionLocal() as session:
+                screenshot = session.get(Screenshot, screenshot_id)
+                if screenshot:
+                    session.delete(screenshot)
+                    session.commit()
+                    return True
+                return False
         except Exception as e:
-            session.rollback()
             print(f"Error deleting screenshot: {e}")
             return False
         finally:

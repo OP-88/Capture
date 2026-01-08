@@ -138,6 +138,100 @@ def get_dark_theme() -> str:
     
     /* Labels */
     QLabel {
+        background-color: transparent;
+        color: #e0e0e0;
+    }
+    
+    /* List Widgets */
+    QListWidget {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        padding: 8px;
+    }
+    
+    QListWidget::item {
+        padding: 8px;
+        border-radius: 4px;
+    }
+    
+    QListWidget::item:selected {
+        background-color: #00BFA5;
+        color: #ffffff;
+    }
+    
+    QListWidget::item:hover {
+        background-color: #3a3a3a;
+    }
+    
+    /* Toolbar */
+    QToolBar {
+        background-color: #2b2b2b;
+        border: none;
+        padding: 4px;
+        spacing: 8px;
+    }
+    
+    QToolBar QAction {
+        color: #e0e0e0;
+        padding: 6px 12px;
+    }
+    
+    /* Status Bar */
+    QStatusBar {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+        border-top: 1px solid #3a3a3a;
+    }
+    
+    /* Line Edit */
+    QLineEdit {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+        border: 1px solid #3a3a3a;
+        border-radius: 4px;
+        padding: 6px;
+    }
+    
+    QLineEdit:focus {
+        border-color: #00BFA5;
+    }
+    
+    /* Sliders */
+    QSlider::groove:horizontal {
+        background-color: #3a3a3a;
+        height: 6px;
+        border-radius: 3px;
+    }
+    
+    QSlider::handle:horizontal {
+        background-color: #00BFA5;
+        width: 16px;
+        height: 16px;
+        margin: -5px 0;
+        border-radius: 8px;
+    }
+    
+    QSlider::handle:horizontal:hover {
+        background-color: #00E5BF;
+    }
+    
+    /* Group Box */
+    QGroupBox {
+        color: #e0e0e0;
+        border: 1px solid #3a3a3a;
+        border-radius: 6px;
+        margin-top: 12px;
+        padding-top: 12px;
+        font-weight: bold;
+    }
+    
+    QGroupBox::title {
+        subcontrol-origin: margin;
+        left: 10px;
+        padding: 0 5px;
+    }
     
     /* Combo Box */
     QComboBox {

@@ -1,5 +1,9 @@
 # Capture
 
+<p align="center">
+  <img src="capture_icon.png" alt="Capture Icon" width="200"/>
+</p>
+
 **A Local-First Screenshot Enhancement & Library Tool for Security Professionals**
 
 > Built on Fedora GNOME | Designed for Cybersecurity Documentation | Zero Cloud Dependencies
@@ -17,7 +21,7 @@ In high-stakes security audits and full-stack development, the "screenshot" is t
 
 **Capture** is a forensic-grade desktop application that:
 
-1. **Enhances Quality**: AI/CV-powered sharpening for "report-ready" screenshots
+1. **Enhances Quality**: Granular adjustment controls for professional-grade screenshots
 2. **Sanitizes PII**: Automatic detection and redaction of sensitive data
 3. **Maintains Chain-of-Custody**: Tracks original vs. modified versions
 4. **100% Local**: Zero cloud uploads, all processing happens on your machine
@@ -31,8 +35,14 @@ In high-stakes security audits and full-stack development, the "screenshot" is t
 - Chain-of-custody: separate storage for originals and modified versions
 
 ### Enhancement Suite
-- **🔍 Sharpen**: Unsharp mask filter for terminal text legibility
-- **🎨 Highlight**: Semi-transparent annotations (coming soon)
+- **🎨 Granular Adjustments**: Google Photos-style slider controls
+  - **Brightness** (-100 to +100): Darken or brighten images
+  - **Contrast** (-100 to +100): Adjust tonal range
+  - **Saturation** (-100 to +100): Control color intensity
+  - **Sharpness** (0 to +100): Unsharp masking for text legibility
+  - **Real-Time Preview**: Instant feedback as you adjust
+  - **Non-Destructive**: Always processes from the original
+- **🔍 One-Click Sharpen**: Quick enhancement for terminal screenshots
 - **⬆️ Upscale**: Placeholder for AI-based super-resolution
 
 ### PII Sanitization

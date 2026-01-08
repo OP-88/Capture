@@ -60,37 +60,30 @@ cp requirements.txt %{buildroot}%{_datadir}/%{name}/
 cp README.md %{buildroot}%{_datadir}/%{name}/
 cp LICENSE %{buildroot}%{_datadir}/%{name}/
 
-# Create executable wrapper
-cat > %{buildroot}%{_bindir}/capture << 'EOF'
+# Install icon
+cp capture_icon.png %{buildroot}%{_datadir}/pixmaps/%{name}.png
+
+# Create launcher script
+cat > %{buildroot}%{_bindir}/%{name} << 'EOF'
 #!/bin/bash
 cd %{_datadir}/%{name}
-export CAPTURE_DATA_DIR="%{_localstatedir}/lib/%{name}"
 exec python3 run.py "$@"
 EOF
-chmod +x %{buildroot}%{_bindir}/capture
+chmod +x %{buildroot}%{_bindir}/%{name}
 
 # Create desktop file
-cat > %{buildroot}%{_datadir}/applications/capture.desktop << 'EOF'
+cat > %{buildroot}%{_datadir}/applications/%{name}.desktop << 'EOF'
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=Capture
-Comment=Screenshot Enhancement Tool for Security Professionals
+Comment=Screenshot Enhancement & Library Tool
 Exec=capture
 Icon=capture
 Terminal=false
-Categories=Graphics;Photography;Security;
-Keywords=screenshot;security;pii;sanitize;
+Categories=Graphics;Photography;Office;
+Keywords=screenshot;image;enhancement;security;
 EOF
-
-# Create icon (minimal 1x1 PNG)
-python3 -c "
-import base64
-# Minimal 1x1 transparent PNG
-png_data = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
-with open('%{buildroot}%{_datadir}/pixmaps/capture.png', 'wb') as f:
-    f.write(png_data)
-"
 
 %files
 %license LICENSE

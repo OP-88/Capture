@@ -10,6 +10,7 @@ Source0:        %{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
+BuildRequires:  python3-pip
 
 Requires:       python3 >= 3.12
 Requires:       python3-PyQt6 >= 6.6.0
@@ -111,7 +112,7 @@ if [ "$1" -eq 1 ]; then
 fi
 
 %changelog
-* Wed Jan 08 2026 OP-88 <op88@example.com> - 1.0.0-1
+* Wed Jan 08 2025 OP-88 <op88@example.com> - 1.0.0-1
 - Initial release
 - PyQt6 GUI with dark GNOME-native theme
 - SQLAlchemy database for chain-of-custody tracking

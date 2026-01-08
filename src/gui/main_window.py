@@ -340,8 +340,10 @@ class MainWindow(QMainWindow):
                 sanitization_log=log
             )
             
-            # Update current image and display
+            # Update all image references to preserve sanitization during adjustments
             self.current_image = sanitized
+            self.original_image = sanitized.copy()  # Update original so adjustments preserve blur
+            self.working_image = sanitized.copy()   # Update working copy as well
             self.display_preview(sanitized)
             
             QMessageBox.information(

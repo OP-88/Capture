@@ -82,10 +82,14 @@ Categories=Graphics;Photography;Security;
 Keywords=screenshot;security;pii;sanitize;
 EOF
 
-# Create icon (placeholder - you can replace with actual icon)
-cat > %{buildroot}%{_datadir}/pixmaps/capture.png << 'EOF'
-# Placeholder for icon
-EOF
+# Create icon (minimal 1x1 PNG)
+python3 -c "
+import base64
+# Minimal 1x1 transparent PNG
+png_data = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
+with open('%{buildroot}%{_datadir}/pixmaps/capture.png', 'wb') as f:
+    f.write(png_data)
+"
 
 %files
 %license LICENSE

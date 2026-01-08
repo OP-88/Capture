@@ -94,7 +94,7 @@ sudo dnf install -y python3 tesseract tesseract-langpack-eng file-libs
 ./build-rpm.sh
 
 # Install Capture
-sudo dnf install ./capture-1.0.0-1.*.noarch.rpm
+sudo dnf install ./capture-1.0.2-1.*.noarch.rpm
 
 # Run from anywhere
 capture

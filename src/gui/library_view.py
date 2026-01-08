@@ -88,12 +88,15 @@ class LibraryView(QWidget):
         
         # Create list item
         item = QListWidgetItem()
-        item.setIcon(thumbnail)
         
         # Set item text (filename + date)
         filename = Path(screenshot.original_path).name
         date_str = screenshot.import_date.strftime("%Y-%m-%d %H:%M")
         item.setText(f"{filename}\n{date_str}")
+        
+        # Set thumbnail icon (convert QPixmap to QIcon)
+        item.setIcon(QIcon(thumbnail))
+        item.setSizeHint(QSize(150, 150))
         
         # Store screenshot ID in item data
         item.setData(Qt.ItemDataRole.UserRole, screenshot.id)

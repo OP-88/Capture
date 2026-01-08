@@ -416,14 +416,6 @@ class MainWindow(QMainWindow):
         self.working_image = adjusted.copy()
         self.current_image = adjusted
         self.display_preview(adjusted)
-        
-        # Update status
-        active_adjustments = [k for k, v in adjustments.items() if v != 0]
-        if active_adjustments:
-            status_msg = f"Active adjustments: {', '.join(active_adjustments)}"
-            self.status_bar.showMessage(status_msg)
-        else:
-            self.status_bar.showMessage("No adjustments applied")
     
     def on_reset_adjustments(self):
         """

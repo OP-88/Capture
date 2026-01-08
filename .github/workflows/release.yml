@@ -1,0 +1,138 @@
+name: Build and Release RPM
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-rpm:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install build dependencies
+        run: |
+          dnf install -y rpm-build rpmdevtools python3-devel tar gzip
+      
+      - name: Set up RPM build environment
+        run: |
+          rpmdev-setuptree
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+      
+      - name: Create source tarball
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          mkdir -p ~/rpmbuild/SOURCES
+          tar --exclude='.git' \
+              --exclude='.github' \
+              --exclude='venv' \
+              --exclude='__pycache__' \
+              --exclude='data' \
+              --exclude='.gitignore' \
+              -czf ~/rpmbuild/SOURCES/capture-${VERSION}.tar.gz \
+              --transform "s,^,capture-${VERSION}/," \
+              *
+      
+      - name: Update spec file version
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          sed -i "s/^Version:.*/Version:        ${VERSION}/" capture.spec
+          cp capture.spec ~/rpmbuild/SPECS/
+      
+      - name: Build RPM
+        run: |
+          cd ~/rpmbuild/SPECS
+          rpmbuild -ba capture.spec
+      
+      - name: Copy artifacts
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          mkdir -p artifacts
+          cp ~/rpmbuild/RPMS/noarch/capture-${VERSION}-*.noarch.rpm artifacts/
+          cp ~/rpmbuild/SRPMS/capture-${VERSION}-*.src.rpm artifacts/ || true
+      
+      - name: Upload RPM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm-packages
+          path: artifacts/*.rpm
+          retention-days: 90
+      
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', steps.version.outputs.VERSION) || github.ref_name }}
+          name: Capture v${{ steps.version.outputs.VERSION }}
+          body: |
+            # Capture v${{ steps.version.outputs.VERSION }}
+            
+            **A Local-First Screenshot Enhancement & Library Tool for Security Professionals**
+            
+            ## 🚀 Installation on Fedora
+            
+            ### Quick Install
+            
+            ```bash
+            # Install system dependencies
+            sudo dnf install -y python3 tesseract tesseract-langpack-eng file-libs
+            
+            # Download and install Capture
+            wget https://github.com/OP-88/Capture/releases/download/v${{ steps.version.outputs.VERSION }}/capture-${{ steps.version.outputs.VERSION }}-1.fc*.noarch.rpm
+            sudo dnf install ./capture-${{ steps.version.outputs.VERSION }}-1.fc*.noarch.rpm
+            
+            # Run Capture
+            capture
+            ```
+            
+            ## ✨ Features
+            
+            - 🔍 **Image Enhancement**: Sharpen filter for terminal text legibility
+            - 🔒 **PII Sanitization**: Automatic detection of IPs, API keys, emails
+            - 📋 **Clipboard Integration**: Copy enhanced images directly
+            - 💾 **EXIF Stripping**: Secure export with metadata removal
+            - 🗄️ **Library Management**: Grid view with search and tagging
+            - 🔐 **100% Local**: Zero cloud uploads, complete privacy
+            
+            ## 📦 What's New
+            
+            - Initial release of Capture
+            - PyQt6 GUI with dark GNOME-native theme
+            - Complete PII sanitization engine
+            - Chain-of-custody tracking
+            - Production-ready and tested
+            
+            ## 📖 Documentation
+            
+            - [Installation Guide](https://github.com/OP-88/Capture/blob/main/INSTALL.md)
+            - [README](https://github.com/OP-88/Capture/blob/main/README.md)
+            
+            ## 🐛 Bug Reports
+            
+            Report issues at: https://github.com/OP-88/Capture/issues
+          files: artifacts/*.rpm
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

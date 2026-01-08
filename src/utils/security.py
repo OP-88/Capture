@@ -30,15 +30,15 @@ class SecurityValidator:
         Initialize security validator.
         
         Args:
-            base_vault_path: Absolute path to the vault directory (optional, uses ~/.capture/vault/ by default)
+            base_vault_path: Absolute path to the vault directory (optional, uses XDG base dir by default)
         """
         if base_vault_path is None:
-            # Use user's home directory
-            home = Path.home()
-            base_vault_path = str(home / '.capture' / 'vault')
-            Path(base_vault_path).mkdir(parents=True, exist_ok=True)
-            (Path(base_vault_path) / 'originals').mkdir(exist_ok=True)
-            (Path(base_vault_path) / 'modified').mkdir(exist_ok=True)
+            # Use XDG-compliant base directory for Fedora
+            xdg_data_home = os.path.expanduser("~/.local/share/capture")
+            base_vault_path = os.path.join(xdg_data_home, "vault")
+            os.makedirs(base_vault_path, exist_ok=True)
+            os.makedirs(os.path.join(base_vault_path, "originals"), exist_ok=True)
+            os.makedirs(os.path.join(base_vault_path, "modified"), exist_ok=True)
         
         self.base_vault_path = Path(base_vault_path).resolve()
         

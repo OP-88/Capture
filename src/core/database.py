@@ -2,6 +2,7 @@
 Database layer for Capture using SQLAlchemy.
 Manages screenshot library with chain-of-custody tracking.
 """
+import os
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -39,16 +40,16 @@ class DatabaseManager:
         Initialize database manager.
         
         Args:
-            db_path: Path to SQLite database file (optional, uses ~/.capture/ by default)
+            db_path: Path to SQLite database file (optional, uses XDG base dir by default)
         """
         if db_path is None:
-            # Use user's home directory
-            home = Path.home()
-            data_dir = home / '.capture' / 'data'
-            data_dir.mkdir(parents=True, exist_ok=True)
-            db_path = str(data_dir / 'capture.db')
+            # Use XDG-compliant base directory for Fedora
+            xdg_data_home = os.path.expanduser("~/.local/share/capture")
+            os.makedirs(xdg_data_home, exist_ok=True)
+            db_path = os.path.join(xdg_data_home, "capture.db")
         
         self.db_path = db_path
+        # Use four slashes for absolute path in SQLite URI
         self.engine = create_engine(f'sqlite:///{db_path}', echo=False)
         Base.metadata.create_all(self.engine)
         self.SessionLocal = sessionmaker(bind=self.engine)

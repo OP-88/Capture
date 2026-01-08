@@ -11,7 +11,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Platform](https://img.shields.io/badge/Platform-Linux-orange.svg)](https://github.com/OP-88/Capture)
 [![Python](https://img.shields.io/badge/Python-3.12+-green.svg)](https://www.python.org/)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/OP-88/Capture/release.yml?branch=main)](https://github.com/OP-88/Capture/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/OP-88/Capture/release.yml)](https://github.com/OP-88/Capture/actions)
 
 > Built on Fedora GNOME | Designed for Cybersecurity Documentation | Zero Cloud Dependencies
 

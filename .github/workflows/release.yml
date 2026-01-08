@@ -23,7 +23,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          dnf install -y rpm-build rpmdevtools python3-devel tar gzip
+          dnf install -y rpm-build rpmdevtools python3-devel python3-setuptools python3-pip tar gzip
 
       - name: Set up RPM build environment
         run: |

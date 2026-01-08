@@ -5,7 +5,7 @@ Displays screenshot gallery in grid layout with thumbnails.
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QListWidget,
                               QListWidgetItem, QLabel, QPushButton, QLineEdit)
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
-from PyQt6.QtGui import QPixmap, QImage
+from PyQt6.QtGui import QPixmap, QImage, QIcon
 from pathlib import Path
 from typing import List, Optional
 import cv2

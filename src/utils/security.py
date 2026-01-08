@@ -25,13 +25,21 @@ class SecurityValidator:
     # Allowed file extensions
     ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.webp'}
     
-    def __init__(self, base_vault_path: str):
+    def __init__(self, base_vault_path: str = None):
         """
         Initialize security validator.
         
         Args:
-            base_vault_path: Absolute path to the vault directory
+            base_vault_path: Absolute path to the vault directory (optional, uses ~/.capture/vault/ by default)
         """
+        if base_vault_path is None:
+            # Use user's home directory
+            home = Path.home()
+            base_vault_path = str(home / '.capture' / 'vault')
+            Path(base_vault_path).mkdir(parents=True, exist_ok=True)
+            (Path(base_vault_path) / 'originals').mkdir(exist_ok=True)
+            (Path(base_vault_path) / 'modified').mkdir(exist_ok=True)
+        
         self.base_vault_path = Path(base_vault_path).resolve()
         
     def validate_path(self, file_path: str) -> Optional[Path]:

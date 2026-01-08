@@ -34,13 +34,20 @@ class Screenshot(Base):
 class DatabaseManager:
     """Manages database operations for Capture."""
     
-    def __init__(self, db_path: str = 'data/capture.db'):
+    def __init__(self, db_path: str = None):
         """
         Initialize database manager.
         
         Args:
-            db_path: Path to SQLite database file
+            db_path: Path to SQLite database file (optional, uses ~/.capture/ by default)
         """
+        if db_path is None:
+            # Use user's home directory
+            home = Path.home()
+            data_dir = home / '.capture' / 'data'
+            data_dir.mkdir(parents=True, exist_ok=True)
+            db_path = str(data_dir / 'capture.db')
+        
         self.db_path = db_path
         self.engine = create_engine(f'sqlite:///{db_path}', echo=False)
         Base.metadata.create_all(self.engine)

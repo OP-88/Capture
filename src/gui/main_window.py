@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.db_manager = DatabaseManager()
-        self.security_validator = SecurityValidator(str(Path('data/vault').resolve()))
+        self.security_validator = SecurityValidator()
         self.image_processor = ImageProcessor()
         self.sanitizer = PIISanitizer()
         self.exporter = Exporter()

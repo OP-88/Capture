@@ -33,6 +33,8 @@ In high-stakes security audits and full-stack development, the "screenshot" is t
 - Metadata tracking: date, tags, file size, dimensions
 - Search and filter by tags
 - Chain-of-custody: separate storage for originals and modified versions
+- **Right-click delete**: Remove screenshots from library
+- **Dark theme UI**: Seamless GNOME integration
 
 ### Enhancement Suite
 - **🎨 Granular Adjustments**: Google Photos-style slider controls
@@ -43,7 +45,7 @@ In high-stakes security audits and full-stack development, the "screenshot" is t
   - **Real-Time Preview**: Instant feedback as you adjust
   - **Non-Destructive**: Always processes from the original
 - **🔍 One-Click Sharpen**: Quick enhancement for terminal screenshots
-- **⬆️ Upscale**: Placeholder for AI-based super-resolution
+- **⬆️ Cumulative Editing**: Adjustments + sanitization stack together (order-independent)
 
 ### PII Sanitization
 - **Automatic Detection**: Regex + OCR for:
@@ -53,10 +55,12 @@ In high-stakes security audits and full-stack development, the "screenshot" is t
   - JWT tokens
   - Private keys
 - **Redaction Methods**: Blur or pixelate
+- **Persistent Protection**: Sanitization remains intact when adjusting image quality
 - **Audit Log**: Tracks what was sanitized
 
 ### Export & Integration
 - **📋 Copy to Clipboard**: Direct copy for quick pasting
+- **💾 Download to Pictures**: Save to `~/Pictures/Capture/` with timestamp
 - **💾 Export**: Save as PNG/JPEG with EXIF metadata stripped
 - **🔒 Secure**: All exports sanitized and anonymized
 

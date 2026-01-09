@@ -2,10 +2,14 @@ version: '3.8'
 
 services:
   capture:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: capture:latest
+    # Option 1: Use pre-built image from Docker Hub (recommended)
+    image: op88/capture:latest
+    
+    # Option 2: Build from local Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    # image: capture:latest
     container_name: capture
     network_mode: host
     environment:

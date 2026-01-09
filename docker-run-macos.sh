@@ -40,6 +40,17 @@ xhost + $IP
 # Set DISPLAY for XQuartz
 export DISPLAY=$IP:0
 
+# Determine image source
+if [ "$1" == "--local" ]; then
+    IMAGE="capture:latest"
+    echo "Using locally built image"
+else
+    IMAGE="op88/capture:latest"
+    echo "Using Docker Hub image (op88/capture:latest)"
+    echo "Pulling latest version..."
+    docker pull $IMAGE
+fi
+
 # Run the container
 echo "Launching Capture GUI..."
 docker run --rm \
@@ -47,6 +58,6 @@ docker run --rm \
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
     -v capture-data:/app/data \
     --name capture \
-    capture:latest
+    $IMAGE
 
 echo "✅ Capture stopped"

@@ -22,6 +22,17 @@ fi
 
 echo "Using: $DOCKER_CMD"
 
+# Determine image source
+if [ "$1" == "--local" ]; then
+    IMAGE="capture:latest"
+    echo "Using locally built image"
+else
+    IMAGE="op88/capture:latest"
+    echo "Using Docker Hub image (op88/capture:latest)"
+    echo "Pulling latest version..."
+    $DOCKER_CMD pull $IMAGE
+fi
+
 # Run the container
 echo "Launching Capture GUI..."
 $DOCKER_CMD run --rm \
@@ -31,7 +42,7 @@ $DOCKER_CMD run --rm \
     --security-opt label=disable \
     -v capture-data:/app/data \
     --name capture \
-    capture:latest
+    $IMAGE
 
 # Restore X server permissions
 echo "Restoring X11 permissions..."

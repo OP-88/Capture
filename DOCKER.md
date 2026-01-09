@@ -4,6 +4,31 @@ Run the Capture screenshot enhancement tool in an isolated container on any oper
 
 ## Quick Start
 
+### Option 1: Pull from Docker Hub (Recommended)
+
+**No build required** - use the official pre-built image:
+
+```bash
+# Pull the latest version
+docker pull op88/capture:latest
+
+# Run on Linux
+docker run --rm --net=host \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    --security-opt label=disable \
+    -v capture-data:/app/data \
+    op88/capture:latest
+```
+
+**Benefits:**
+- ✅ Instant setup - no build wait time
+- ✅ Multi-platform support (amd64, arm64)
+- ✅ Always get the latest stable version
+- ✅ Automatic 4-5 minute build saved
+
+### Option 2: Build Locally
+
 ### Linux
 ```bash
 # Build the image

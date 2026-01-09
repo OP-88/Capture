@@ -10,6 +10,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Platform](https://img.shields.io/badge/Platform-Linux-orange.svg)](https://github.com/OP-88/Capture)
+[![Docker](https://img.shields.io/docker/v/op88/capture?label=Docker&logo=docker)](https://hub.docker.com/r/op88/capture)
 [![Python](https://img.shields.io/badge/Python-3.12+-green.svg)](https://www.python.org/)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/OP-88/Capture/release.yml)](https://github.com/OP-88/Capture/actions)
 
@@ -175,7 +176,28 @@ python run.py
 
 ### Docker Container (Cross-Platform)
 
-**Run Capture from any OS using Docker:**
+**Option 1: Pull from Docker Hub (Easiest)**
+
+No build required - use the pre-built image:
+
+```bash
+# Pull the latest image
+docker pull op88/capture:latest
+
+# Linux
+docker run --rm --net=host \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    --security-opt label=disable \
+    -v capture-data:/app/data \
+    op88/capture:latest
+
+# Or use docker-compose (update image name in docker-compose.yml)
+```
+
+**Option 2: Build Locally**
+
+Run Capture from any OS using Docker:
 
 ```bash
 # Build the image (one-time setup)

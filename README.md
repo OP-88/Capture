@@ -15,6 +15,18 @@
 [![Docker Hub](https://img.shields.io/docker/v/ogq0w3efq/capture?label=Docker%20Hub)](https://hub.docker.com/r/ogq0w3efq/capture)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/OP-88/Capture/release.yml)](https://github.com/OP-88/Capture/actions)
 
+## 🐳 Available on Docker Hub
+
+**Pull and run instantly - no build required!**
+
+```bash
+docker pull ogq0w3efq/capture:latest
+```
+
+👉 **[View on Docker Hub](https://hub.docker.com/r/ogq0w3efq/capture)** - Multi-platform images (AMD64 + ARM64)
+
+---
+
 > Built on Fedora GNOME | Designed for Cybersecurity Documentation | Zero Cloud Dependencies
 
 </div>

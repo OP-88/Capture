@@ -10,7 +10,7 @@ Run the Capture screenshot enhancement tool in an isolated container on any oper
 
 ```bash
 # **Pull the pre-built image**:
-docker pull oqq0w3efq/capture:latest
+docker pull ogq0w3efq/capture:latest
 
 # Run on Linux
 docker run --rm --net=host \

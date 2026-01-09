@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  capture:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: capture:latest
+    container_name: capture
+    network_mode: host
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - QT_QPA_PLATFORM=xcb
+    volumes:
+      # X11 socket for GUI display
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Persistent data storage
+      - capture-data:/app/data
+      # Optional: Map to host directory for easy access
+      # - ./data:/app/data
+    security_opt:
+      - label=disable
+    stdin_open: true
+    tty: true
+
+volumes:
+  capture-data:
+    driver: local

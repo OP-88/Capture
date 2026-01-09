@@ -173,6 +173,36 @@ pip install -r requirements.txt
 python run.py
 ```
 
+### Docker Container (Cross-Platform)
+
+**Run Capture from any OS using Docker:**
+
+```bash
+# Build the image (one-time setup)
+docker build -t capture:latest .
+
+# Linux
+./docker-run-linux.sh
+
+# macOS (requires XQuartz)
+./docker-run-macos.sh
+
+# Windows (requires WSL2 + X server)
+.\docker-run-windows.ps1
+```
+
+**Advantages:**
+- ✅ Works on Linux, macOS, and Windows
+- ✅ Isolated environment (no Python conflicts)
+- ✅ One-command deployment
+
+**Requirements:**
+- Linux: Docker/Podman + X11 (pre-installed on most distros)
+- macOS: Docker Desktop + [XQuartz](https://www.xquartz.org/)
+- Windows: Docker Desktop + WSL2 + [VcXsrv](https://sourceforge.net/projects/vcxsrv/)
+
+For detailed Docker setup and troubleshooting, see **[DOCKER.md](DOCKER.md)**.
+
 ---
 
 ## 📸 Screenshots

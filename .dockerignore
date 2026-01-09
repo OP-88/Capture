@@ -1,0 +1,53 @@
+# Docker build exclusions
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.rpm
+*.spec
+build-rpm.sh
+capture-1.0.0-1.fc42.noarch.rpm
+
+# Documentation (except essential)
+*.md
+!DOCKER.md
+!README.md
+
+# Test files
+test_*.py
+*_test.py
+
+# Data (will be in volumes)
+data/vault/
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# Docker files (don't copy into image)
+Dockerfile*
+docker-compose*.yml
+.dockerignore

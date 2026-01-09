@@ -3,7 +3,7 @@ version: '3.8'
 services:
   capture:
     # Option 1: Use pre-built image from Docker Hub (recommended)
-    image: op88/capture:latest
+    image: oqq0w3efq/capture:latest
     
     # Option 2: Build from local Dockerfile
     # build:

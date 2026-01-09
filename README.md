@@ -8,10 +8,11 @@
 
 **A Local-First Screenshot Enhancement & Library Tool for Security Professionals**
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Platform](https://img.shields.io/badge/Platform-Linux-orange.svg)](https://github.com/OP-88/Capture)
-[![Docker](https://img.shields.io/docker/v/op88/capture?label=Docker&logo=docker)](https://hub.docker.com/r/op88/capture)
-[![Python](https://img.shields.io/badge/Python-3.12+-green.svg)](https://www.python.org/)
+[![Fedora 41](https://img.shields.io/badge/Fedora-41-blue?logo=fedora)](https://getfedora.org/)
+[![Python 3.12+](https://img.shields.io/badge/Python-3.12+-blue?logo=python)](https://www.python.org/)
+[![PyQt6](https://img.shields.io/badge/GUI-PyQt6-green?logo=qt)](https://www.riverbankcomputing.com/software/pyqt/)
+[![GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](LICENSE)
+[![Docker Hub](https://img.shields.io/docker/v/oqq0w3efq/capture?label=Docker%20Hub)](https://hub.docker.com/r/oqq0w3efq/capture)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/OP-88/Capture/release.yml)](https://github.com/OP-88/Capture/actions)
 
 > Built on Fedora GNOME | Designed for Cybersecurity Documentation | Zero Cloud Dependencies
@@ -48,10 +49,10 @@ In high-stakes security audits and full-stack development, the "screenshot" is t
 
 **Capture** is a forensic-grade desktop application that:
 
-1. **Enhances Quality**: Granular adjustment controls for professional-grade screenshots
-2. **Sanitizes PII**: Automatic detection and redaction of sensitive data
-3. **Maintains Chain-of-Custody**: Tracks original vs. modified versions
-4. **100% Local**: Zero cloud uploads, all processing happens on your machine
+1.  **Enhances Quality**: Granular adjustment controls for professional-grade screenshots
+2.  **Sanitizes PII**: Automatic detection and redaction of sensitive data
+3.  **Maintains Chain-of-Custody**: Tracks original vs. modified versions
+4.  **100% Local**: Zero cloud uploads, all processing happens on your machine
 
 ---
 
@@ -152,39 +153,30 @@ sudo dnf install -y tesseract-langpack-eng
 
 ### Manual Setup (Development)
 
-1. **Clone the repository:**
+1.  **Clone the repository:**
 ```bash
 git clone https://github.com/OP-88/Capture.git
 cd Capture
 ```
 
-2. **Create virtual environment:**
+2.  **Create virtual environment:**
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-3. **Install Python dependencies:**
+3.  **Install Python dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Run Capture:**
+4.  **Run Capture:**
 ```bash
 python run.py
 ```
 
 ### Docker Container (Cross-Platform)
 
-**Option 1: Pull from Docker Hub (Easiest)**
-
-No build required - use the pre-built image:
-
-```bash
-# Pull the latest image
-docker pull op88/capture:latest
-
-# Linux
 docker run --rm --net=host \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \

@@ -9,8 +9,8 @@ Run the Capture screenshot enhancement tool in an isolated container on any oper
 **No build required** - use the official pre-built image:
 
 ```bash
-# Pull the latest version
-docker pull op88/capture:latest
+# **Pull the pre-built image**:
+docker pull oqq0w3efq/capture:latest
 
 # Run on Linux
 docker run --rm --net=host \

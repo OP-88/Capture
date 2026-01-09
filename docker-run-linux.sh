@@ -27,8 +27,8 @@ if [ "$1" == "--local" ]; then
     IMAGE="capture:latest"
     echo "Using locally built image"
 else
-    IMAGE="op88/capture:latest"
-    echo "Using Docker Hub image (op88/capture:latest)"
+    IMAGE="oqq0w3efq/capture:latest"
+    echo "Using Docker Hub image (oqq0w3efq/capture:latest)"
     echo "Pulling latest version..."
     $DOCKER_CMD pull $IMAGE
 fi

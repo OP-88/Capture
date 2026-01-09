@@ -17,7 +17,7 @@ permissions:
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: op88/capture
+  IMAGE_NAME: oqq0w3efq/capture
 
 jobs:
   build-and-push:

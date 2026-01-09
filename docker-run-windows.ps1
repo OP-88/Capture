@@ -47,8 +47,8 @@ if ($args -contains "--local") {
     $image = "capture:latest"
     Write-Host "Using locally built image" -ForegroundColor Green
 } else {
-    $image = "op88/capture:latest"
-    Write-Host "Using Docker Hub image (op88/capture:latest)" -ForegroundColor Green
+    $image = "oqq0w3efq/capture:latest"
+    Write-Host "Using Docker Hub image (oqq0w3efq/capture:latest)" -ForegroundColor Green
     Write-Host "Pulling latest version..." -ForegroundColor Cyan
     docker pull $image
 }

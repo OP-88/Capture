@@ -1,0 +1,145 @@
+name: capture
+base: core22
+version: "1.0.3"
+summary: Local-first screenshot enhancement and library tool
+description: |
+  Capture is a forensic-grade desktop application for security professionals
+  that enhances screenshot quality, sanitizes PII, and maintains chain-of-custody.
+
+  Features:
+  - Granular image adjustments (brightness, contrast, saturation, sharpness)
+  - Automatic PII detection and redaction (IPs, API keys, emails, tokens)
+  - Screenshot library with grid view and tagging
+  - 100% local processing - zero cloud uploads
+  - Dark-themed GNOME integration
+
+license: MIT
+website: https://github.com/verba-mvp/capture
+source-code: https://github.com/verba-mvp/capture
+issues: https://github.com/verba-mvp/capture/issues
+
+grade: stable
+confinement: strict
+
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+
+apps:
+  capture:
+    command: bin/capture-launcher
+    desktop: snap/gui/capture.desktop
+    plugs:
+      - home
+      - desktop
+      - desktop-legacy
+      - wayland
+      - x11
+      - opengl
+      - network
+      - removable-media
+    environment:
+      PYTHONPATH: $SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages
+      PATH: $SNAP/bin:$SNAP/usr/bin:$PATH
+      LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+      TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
+      MAGIC: $SNAP/usr/lib/file/magic.mgc
+      QT_QPA_PLATFORM: xcb
+      DISABLE_WAYLAND: "1"
+
+  diagnose:
+    command: bin/diagnose-launcher
+    plugs:
+      - home
+      - desktop
+      - x11
+    environment:
+      PYTHONPATH: $SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages
+      PATH: $SNAP/bin:$SNAP/usr/bin:$PATH
+      LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+      TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
+      MAGIC: $SNAP/usr/lib/file/magic.mgc
+
+parts:
+  capture:
+    plugin: python
+    source: .
+    python-packages:
+      - . # Installs via setup.py
+    build-environment:
+      # Speed optimization - use prebuilt wheels
+      - PIP_NO_CACHE_DIR: "true"
+      - PIP_PREFER_BINARY: "1"
+    build-packages:
+      - python3-dev
+      - python3-pip
+      - git
+    stage-packages:
+      # CRITICAL: GUI libraries (Jammy compatible)
+      - libgl1
+      - libegl1
+      - libxkbcommon-x11-0
+      - libdbus-1-3
+      - libxcb-icccm4
+      - libxcb-image0
+      - libxcb-keysyms1
+      - libxcb-randr0
+      - libxcb-render-util0
+      - libxcb-xinerama0
+      - libxcb-cursor0
+      - libxcb-shape0
+      - libxcb-xfixes0
+      - tesseract-ocr
+      - tesseract-ocr-eng
+      - libmagic1
+      - libmagic-mgc
+      - file # Note: 'organize' is no longer needed because setup.py installs things correctly into site-packages/bin.
+
+  local-files:
+    plugin: dump
+    source: .
+    build-packages:
+      - wget
+    override-build: |
+      # Manually copy files to the correct snap structure
+      mkdir -p $CRAFT_PART_INSTALL/bin
+      cp $CRAFT_PART_SRC/run.py $CRAFT_PART_INSTALL/bin/
+      cp $CRAFT_PART_SRC/diagnose.py $CRAFT_PART_INSTALL/bin/
+      chmod +x $CRAFT_PART_INSTALL/bin/run.py
+      chmod +x $CRAFT_PART_INSTALL/bin/diagnose.py
+
+      mkdir -p $CRAFT_PART_INSTALL/lib/python3.10/site-packages
+      cp -r $CRAFT_PART_SRC/src $CRAFT_PART_INSTALL/lib/python3.10/site-packages/
+
+  launcher:
+    plugin: dump
+    source: .
+    override-build: |
+      # Copy the icon
+      mkdir -p $CRAFT_PART_INSTALL/meta/gui
+      cp $CRAFT_PART_SRC/capture_icon.png $CRAFT_PART_INSTALL/meta/gui/capture.png
+
+      # Create launcher script
+      mkdir -p $CRAFT_PART_INSTALL/bin
+      cat > $CRAFT_PART_INSTALL/bin/capture-launcher << 'EOF'
+      #!/bin/bash
+      export PYTHONPATH="$SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages"
+      exec python3 "$SNAP/bin/run.py" "$@"
+      EOF
+      chmod +x $CRAFT_PART_INSTALL/bin/capture-launcher
+
+      # Create diagnose launcher
+      cat > $CRAFT_PART_INSTALL/bin/diagnose-launcher << 'EOF'
+      #!/bin/bash
+      export PYTHONPATH="$SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages"
+      exec python3 "$SNAP/bin/diagnose.py" "$@"
+      EOF
+      chmod +x $CRAFT_PART_INSTALL/bin/diagnose-launcher
+
+      # Create diagnose launcher
+      cat > $CRAFT_PART_INSTALL/bin/diagnose-launcher << 'EOF'
+      #!/bin/bash
+      export PYTHONPATH="$SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages"
+      exec python3 "$SNAP/bin/diagnose.py" "$@"
+      EOF
+      chmod +x $CRAFT_PART_INSTALL/bin/diagnose-launcher

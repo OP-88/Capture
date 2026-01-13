@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Capture
+GenericName=Screenshot Enhancement Tool
+Comment=Local-first screenshot enhancement and library tool for security professionals
+Icon=${SNAP}/meta/gui/capture.png
+Exec=capture
+Terminal=false
+Categories=Graphics;Photography;Utility;
+Keywords=screenshot;image;enhancement;security;pii;sanitization;ocr;
+StartupNotify=true
+StartupWMClass=capture

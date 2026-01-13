@@ -13,6 +13,7 @@
 [![PyQt6](https://img.shields.io/badge/GUI-PyQt6-green?logo=qt)](https://www.riverbankcomputing.com/software/pyqt/)
 [![GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](LICENSE)
 [![Docker Hub](https://img.shields.io/docker/v/ogq0w3efq/capture?label=Docker%20Hub)](https://hub.docker.com/r/ogq0w3efq/capture)
+[![Flatpak](https://img.shields.io/badge/Flatpak-Available-blue?logo=flatpak)](FLATPAK.md)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/OP-88/Capture/release.yml)](https://github.com/OP-88/Capture/actions)
 
 ## 🐳 Available on Docker Hub
@@ -122,7 +123,35 @@ pip install -r requirements.txt
 python run.py
 ```
 
-### RPM Package (Recommended for Production)
+### Flatpak Package (Universal Linux)
+
+**One-command install for all distributions:**
+
+```bash
+# Clone the repository
+git clone https://github.com/OP-88/Capture.git
+cd Capture
+
+# Build and install the Flatpak
+./flatpak-build.sh
+
+# Run from anywhere
+flatpak run com.github.OP88.Capture
+```
+
+The Flatpak bundles Python 3.12, PyQt6, and all dependencies, making it work on **any Linux distribution** regardless of their native Python version.
+
+**Benefits:**
+- ✅ Works on Fedora, Ubuntu, Arch, Debian, etc.
+- ✅ No Python version conflicts
+- ✅ Sandboxed for security
+- ✅ Easy updates via Flatpak
+
+For detailed Flatpak instructions and Flathub submission, see **[FLATPAK.md](FLATPAK.md)**.
+
+📦 **For all distribution options (Flatpak, Docker, RPM), see [DISTRIBUTION.md](DISTRIBUTION.md)**
+
+### RPM Package (Fedora/RHEL)
 
 **Build and install as a standalone application:**
 

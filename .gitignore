@@ -1,34 +1,31 @@
-# Ignore Python cache
+# Build artifacts
+*.snap
+*.flatpak
+*.log
+dist/
+build/
+parts/
+stage/
+prime/
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
 
-# Ignore virtual environment
+# Virtual env
 venv/
 env/
-ENV/
+.env
+*.env
 
-# Ignore data directory (user-specific)
-data/
+# Snapcraft
+snap/local/
+.snap/
 
-# Ignore build artifacts
-build/
-dist/
-*.egg-info/
-*.rpm
-*.tar.gz
-
-# Ignore IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Ignore RPM build directory
-~/rpmbuild/
-
-# Ignore OS files
-.DS_Store
-Thumbs.db
+# Temporary
+*_backup.png
+*_original.png
+*_clean.png
+capture-*.flatpak
+repo/
+flatpak-builder-tools/

@@ -19,16 +19,22 @@ class PIIDetector:
     
     # Regex patterns for common PII
     PATTERNS = {
-        'ipv4': r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b',
+        'ipv4': r'\b(?:[0-9]{1,3}[.,]){3}[0-9]{1,3}\b',
         'ipv6': r'\b(?:[A-Fa-f0-9]{1,4}:){7}[A-Fa-f0-9]{1,4}\b',
         'email': r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
-        'api_key_generic': r'\b[A-Za-z0-9]{32,}\b',
-        'aws_access_key': r'\bAKIA[0-9A-Z]{16}\b',
+        'phone': r'\b(?:\+?1[-.]?)?\(?[0-9]{3}\)?[-.]?[0-9]{3}[-.]?[0-9]{4}\b',
+        'ssn': r'\b\d{3}-\d{2}-\d{4}\b',
+        'credit_card': r'\b(?:\d{4}[-\s]?){3}\d{4}\b',
+        'api_key_generic': r'\b[A-Za-z0-9_\-]{20,}\b',
+        'aws_access_key': r'\b(?:AKIA|ASIA)[0-9A-Z]{16}\b',
         'aws_secret': r'\b[A-Za-z0-9/+=]{40}\b',
         'jwt': r'\beyJ[A-Za-z0-9-_=]+\.eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_.+/=]+\b',
         'private_key': r'-----BEGIN (?:RSA |EC )?PRIVATE KEY-----',
         'github_token': r'\bghp_[A-Za-z0-9]{36}\b',
-        'stripe_key': r'\bsk_live_[A-Za-z0-9]{24,}\b',
+        'stripe_key': r'\b(?:sk|pk)_(?:live|test)_[A-Za-z0-9]{24,}\b',
+        'slack_token': r'\bxox[baprs]-([0-9a-zA-Z]{10,48})\b',
+        'google_api': r'\bAIza[0-9A-Za-z-_]{35}\b',
+        'context_secret': r'(?i)\b[a-z0-9_]*(?:password|passwd|secret|token|key|pwd|auth|api|email|phone)[a-z0-9_]*\s*[:=]\s*["\']?([A-Za-z0-9+/=._@-]+)["\']?',
     }
     
     def detect_in_text(self, text: str) -> Dict[str, List[str]]:

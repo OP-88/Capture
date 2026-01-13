@@ -42,6 +42,9 @@ class MainWindow(QMainWindow):
         
         self.init_ui()
         self.load_library()
+
+        # Enable drag and drop
+        self.setAcceptDrops(True)
     
     def init_ui(self):
         """Initialize UI components."""
@@ -167,43 +170,7 @@ class MainWindow(QMainWindow):
         if not file_paths:
             return
         
-        imported_count = 0
-        
-        for file_path in file_paths:
-            # Validate path and file type
-            validated_path = self.security_validator.validate_path(file_path)
-            if not validated_path:
-                QMessageBox.warning(self, "Invalid File", f"Invalid file: {file_path}")
-                continue
-            
-            if not self.security_validator.validate_file_type(validated_path):
-                QMessageBox.warning(self, "Invalid Type", f"Not a valid image: {file_path}")
-                continue
-            
-            try:
-                # Copy to vault
-                vault_path = self.security_validator.get_safe_vault_path(
-                    validated_path.name,
-                    'originals'
-                )
-                shutil.copy2(validated_path, vault_path)
-                
-                # Extract metadata
-                metadata = MetadataHandler.extract_safe_metadata(vault_path)
-                
-                # Add to database
-                screenshot = self.db_manager.add_screenshot(
-                    str(vault_path),
-                    image_metadata=metadata
-                )
-                
-                if screenshot:
-                    imported_count += 1
-            except Exception as e:
-                QMessageBox.critical(self, "Import Error", f"Error importing {file_path}: {e}")
-        
-        self.status_bar.showMessage(f"Imported {imported_count} screenshot(s)")
-        self.load_library()
+        self.import_files_list(file_paths)
     
     def on_screenshot_selected(self, screenshot_id: int):
         """
@@ -341,10 +308,13 @@ class MainWindow(QMainWindow):
             )
             
             # Update all image references to preserve sanitization during adjustments
-            self.current_image = sanitized
-            self.original_image = sanitized.copy()  # Update original so adjustments preserve blur
-            self.working_image = sanitized.copy()   # Update working copy as well
-            self.display_preview(sanitized)
+            # Update original image to include redactions (so future adjustments apply to redacted version)
+            self.original_image = sanitized.copy()
+            
+            # Re-apply current adjustments to the new base
+            self.on_adjustments_changed(self.current_adjustments)
+            
+            # Note: display_preview is handled by on_adjustments_changed
             
             QMessageBox.information(
                 self,
@@ -495,4 +465,69 @@ class MainWindow(QMainWindow):
             )
         else:
             QMessageBox.critical(self, "Error", "Failed to download image")
+
+    # Drag and Drop Events
+    def dragEnterEvent(self, event):
+        """Handle drag enter event."""
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        """Handle drop event."""
+        files = [u.toLocalFile() for u in event.mimeData().urls()]
+        if not files:
+            return
+            
+        # Filter for valid images
+        image_files = [f for f in files if Path(f).suffix.lower() in self.security_validator.ALLOWED_EXTENSIONS]
+        
+        if not image_files:
+            return
+
+        self.import_files_list(image_files)
+
+    def import_files_list(self, file_paths):
+        """Helper to import a list of file paths (shared by drag-drop and dialog)."""
+        if not file_paths:
+            return
+        
+        imported_count = 0
+        
+        for file_path in file_paths:
+            # Validate path and file type
+            validated_path = self.security_validator.validate_path(file_path)
+            if not validated_path:
+                QMessageBox.warning(self, "Invalid File", f"Invalid file: {file_path}")
+                continue
+            
+            if not self.security_validator.validate_file_type(validated_path):
+                QMessageBox.warning(self, "Invalid Type", f"Not a valid image: {file_path}")
+                continue
+            
+            try:
+                # Copy to vault
+                vault_path = self.security_validator.get_safe_vault_path(
+                    validated_path.name,
+                    'originals'
+                )
+                shutil.copy2(validated_path, vault_path)
+                
+                # Extract metadata
+                metadata = MetadataHandler.extract_safe_metadata(vault_path)
+                
+                # Add to database
+                screenshot = self.db_manager.add_screenshot(
+                    str(vault_path),
+                    image_metadata=metadata
+                )
+                
+                if screenshot:
+                    imported_count += 1
+            except Exception as e:
+                QMessageBox.critical(self, "Import Error", f"Error importing {file_path}: {e}")
+        
+        self.status_bar.showMessage(f"Imported {imported_count} screenshot(s)")
+        self.load_library()
 

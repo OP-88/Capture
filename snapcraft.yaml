@@ -1,6 +1,6 @@
 name: capture
 base: core22
-version: "1.0.3"
+version: "1.0.5"
 summary: Local-first screenshot enhancement and library tool
 description: |
   Capture is a forensic-grade desktop application for security professionals

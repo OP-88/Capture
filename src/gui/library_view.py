@@ -2,10 +2,10 @@
 Library/Vault view for Capture.
 Displays screenshot gallery in grid layout with thumbnails.
 """
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QListWidget,
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QListWidget,
                               QListWidgetItem, QLabel, QPushButton, QLineEdit, QMenu)
-from PyQt6.QtCore import Qt, pyqtSignal, QSize
-from PyQt6.QtGui import QPixmap, QImage, QIcon
+from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtGui import QPixmap, QImage, QIcon
 from pathlib import Path
 from typing import List, Optional
 import cv2
@@ -17,9 +17,9 @@ class LibraryView(QWidget):
     """Grid view gallery for screenshots."""
     
     # Signals
-    screenshot_selected = pyqtSignal(int)  # Emits screenshot ID
-    screenshot_double_clicked = pyqtSignal(int)
-    screenshot_delete_requested = pyqtSignal(int)  # Emits screenshot ID for deletion
+    screenshot_selected = Signal(int)  # Emits screenshot ID
+    screenshot_double_clicked = Signal(int)
+    screenshot_delete_requested = Signal(int)  # Emits screenshot ID for deletion
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -35,7 +35,7 @@ class LibraryView(QWidget):
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search tags...")
         self.search_input.textChanged.connect(self.filter_screenshots)
-        search_layout.addWidget(QLabel("🔍"))
+        search_layout.addWidget(QLabel("Search:"))
         search_layout.addWidget(self.search_input)
         layout.addLayout(search_layout)
         
@@ -50,10 +50,19 @@ class LibraryView(QWidget):
         self.grid_widget.itemDoubleClicked.connect(self.on_item_double_clicked)
         layout.addWidget(self.grid_widget)
         
-        # Info label
+        # Info label and Vault status
+        status_layout = QHBoxLayout()
         self.info_label = QLabel("No screenshots in library")
-        self.info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.info_label)
+        
+        self.vault_lock = QLabel("[ Local Vault ]")
+        self.vault_lock.setToolTip("All data is stored locally. No cloud sync.")
+        self.vault_lock.setStyleSheet("color: #00BFA5; font-weight: bold;")
+        
+        status_layout.addWidget(self.info_label)
+        status_layout.addStretch()
+        status_layout.addWidget(self.vault_lock)
+        
+        layout.addLayout(status_layout)
     
     def load_screenshots(self, screenshots: List[Screenshot]):
         """
@@ -109,7 +118,7 @@ class LibraryView(QWidget):
         item = self.grid_widget.itemAt(self.grid_widget.mapFromGlobal(event.globalPos()))
         if item:
             menu = QMenu(self)
-            delete_action = menu.addAction("🗑️ Delete Photo")
+            delete_action = menu.addAction("Delete Photo")
             
             action = menu.exec(event.globalPos())
             if action == delete_action:

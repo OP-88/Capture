@@ -5,7 +5,7 @@ Dark theme stylesheet for Capture - GNOME-native aesthetics.
 
 def get_dark_theme() -> str:
     """
-    Get dark theme stylesheet for PyQt6.
+    Get dark theme stylesheet for PySide6.
     
     Returns:
         CSS stylesheet string

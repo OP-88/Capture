@@ -6,8 +6,8 @@ import cv2
 import numpy as np
 from pathlib import Path
 from typing import Optional
-from PyQt6.QtGui import QImage, QPixmap, QClipboard
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtGui import QImage, QPixmap, QClipboard
+from PySide6.QtWidgets import QApplication
 from PIL import Image
 import io
 

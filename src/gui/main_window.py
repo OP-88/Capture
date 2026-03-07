@@ -1,11 +1,11 @@
 """
 Main window for Capture application.
 """
-from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                               QToolBar, QStatusBar, QFileDialog, QMessageBox,
                               QLabel, QPushButton, QSplitter, QInputDialog)
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QAction, QPixmap, QImage
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtGui import QAction, QPixmap, QImage
 from pathlib import Path
 import shutil
 import cv2
@@ -13,6 +13,7 @@ import numpy as np
 
 from src.gui.library_view import LibraryView
 from src.gui.adjustment_panel import AdjustmentPanel
+from src.gui.canvas_view import CanvasView
 from src.gui.styles import get_dark_theme
 from src.core.database import DatabaseManager, Screenshot
 from src.core.image_processor import ImageProcessor
@@ -37,8 +38,15 @@ class MainWindow(QMainWindow):
         self.current_image: np.ndarray = None
         self.original_image: np.ndarray = None  # Store original for reset
         self.working_image: np.ndarray = None  # Accumulates all changes (adjustments + sanitization)
+        
+        # Undo/Redo Stacks
+        self.undo_stack: list = []
+        self.redo_stack: list = []
+        
         self.current_adjustments: dict = {'brightness': 0, 'contrast': 0, 'saturation': 0, 'sharpness': 0}
         self.sanitized_regions: list = []  # Store PII regions for re-application
+        
+        self.highlight_color = (255, 255, 0) # RGB Tuple for yellow
         
         self.init_ui()
         self.load_library()
@@ -72,46 +80,87 @@ class MainWindow(QMainWindow):
         preview_widget = QWidget()
         preview_layout = QVBoxLayout(preview_widget)
         
-        self.preview_label = QLabel("Select a screenshot to preview")
-        self.preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.preview_label.setMinimumSize(400, 400)
-        self.preview_label.setStyleSheet("border: 1px solid #3a3a3a; border-radius: 8px;")
-        preview_layout.addWidget(self.preview_label)
+        self.canvas = CanvasView()
+        self.canvas.setMinimumSize(400, 400)
+        self.canvas.setStyleSheet("border: 1px solid #3a3a3a; border-radius: 8px;")
+        preview_layout.addWidget(self.canvas)
         
         # Action buttons
         button_layout = QHBoxLayout()
         
-        self.sharpen_btn = QPushButton("🔍 Sharpen")
+        self.sharpen_btn = QPushButton("Sharpen")
         self.sharpen_btn.clicked.connect(self.sharpen_current)
         self.sharpen_btn.setEnabled(False)
         button_layout.addWidget(self.sharpen_btn)
         
-        self.sanitize_btn = QPushButton("🔒 Sanitize PII")
+        self.sanitize_btn = QPushButton("Sanitize PII")
         self.sanitize_btn.clicked.connect(self.sanitize_current)
         self.sanitize_btn.setEnabled(False)
         button_layout.addWidget(self.sanitize_btn)
         
-        self.copy_btn = QPushButton("📋 Copy to Clipboard")
+        self.copy_btn = QPushButton("Copy to Clipboard")
         self.copy_btn.clicked.connect(self.copy_to_clipboard)
         self.copy_btn.setEnabled(False)
         button_layout.addWidget(self.copy_btn)
         
-        self.download_btn = QPushButton("💾 Download to Pictures")
+        self.download_btn = QPushButton("Download to Pictures")
         self.download_btn.clicked.connect(self.download_to_pictures)
         self.download_btn.setEnabled(False)
         button_layout.addWidget(self.download_btn)
+        
+        # Undo / Redo Buttons
+        self.undo_btn = QPushButton("Undo")
+        self.undo_btn.clicked.connect(self.undo_action)
+        self.undo_btn.setEnabled(False)
+        button_layout.addWidget(self.undo_btn)
+        
+        self.redo_btn = QPushButton("Redo")
+        self.redo_btn.clicked.connect(self.redo_action)
+        self.redo_btn.setEnabled(False)
+        button_layout.addWidget(self.redo_btn)
         
         preview_layout.addLayout(button_layout)
         
         splitter.addWidget(preview_widget)
         
-        # Adjustment panel (right side)
+        # Right Side Panel
+        right_panel = QWidget()
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Adjustment panel (top of right side)
         self.adjustment_panel = AdjustmentPanel()
         self.adjustment_panel.adjustments_changed.connect(self.on_adjustments_changed)
-        self.adjustment_panel.reset_requested.connect(self.on_reset_adjustments)
-        self.adjustment_panel.setMaximumWidth(320)
+        self.adjustment_panel.smart_optimize_requested.connect(self.on_smart_optimize_requested)
         self.adjustment_panel.set_enabled(False)
-        splitter.addWidget(self.adjustment_panel)
+        right_layout.addWidget(self.adjustment_panel)
+        
+        # Tools layout for Focus Suite (bottom of right side)
+        from PySide6.QtWidgets import QGroupBox
+        tools_group = QGroupBox("Focus Suite Tools")
+        tools_layout = QVBoxLayout(tools_group)
+        
+        self.highlight_btn = QPushButton("Lume Highlight")
+        self.highlight_btn.clicked.connect(lambda: self.set_canvas_tool('highlight'))
+        self.highlight_btn.setToolTip("Freeform highlighter tool")
+        tools_layout.addWidget(self.highlight_btn)
+        
+        # Color chooser for highlight
+        self.color_btn = QPushButton("Pick Highlight Color")
+        self.color_btn.setStyleSheet("background-color: yellow; color: black;") # Default
+        self.color_btn.clicked.connect(self.pick_highlight_color)
+        tools_layout.addWidget(self.color_btn)
+        
+        self.blur_btn = QPushButton("Selective Blur")
+        self.blur_btn.clicked.connect(lambda: self.set_canvas_tool('blur'))
+        self.blur_btn.setToolTip("Precision manual blur tool")
+        tools_layout.addWidget(self.blur_btn)
+        
+        tools_layout.addStretch()
+        right_layout.addWidget(tools_group)
+        
+        right_panel.setMaximumWidth(320)
+        splitter.addWidget(right_panel)
         
         splitter.setStretchFactor(0, 1)  # Library
         splitter.setStretchFactor(1, 2)  # Preview (larger)
@@ -125,7 +174,21 @@ class MainWindow(QMainWindow):
         # Create status bar
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
+        
+        # Add Air-Gap Status Shield (Permanent)
+        self.airgap_shield = QLabel("🛡️")
+        self.airgap_shield.setToolTip("Air-Gapped (Zero Network)")
+        self.status_bar.addPermanentWidget(self.airgap_shield)
+        
         self.status_bar.showMessage("Ready")
+        
+        # Undo / Redo Shortcuts
+        from PySide6.QtGui import QKeySequence, QShortcut
+        self.undo_shortcut = QShortcut(QKeySequence.StandardKey.Undo, self)
+        self.undo_shortcut.activated.connect(self.undo_action)
+        
+        self.redo_shortcut = QShortcut(QKeySequence.StandardKey.Redo, self)
+        self.redo_shortcut.activated.connect(self.redo_action)
     
     def create_toolbar(self):
         """Create application toolbar."""
@@ -134,23 +197,18 @@ class MainWindow(QMainWindow):
         self.addToolBar(toolbar)
         
         # Import action
-        import_action = QAction("📥 Import", self)
+        import_action = QAction("Import", self)
         import_action.triggered.connect(self.import_screenshots)
         toolbar.addAction(import_action)
         
         toolbar.addSeparator()
         
         # Export action
-        export_action = QAction("💾 Export", self)
+        export_action = QAction("Export", self)
         export_action.triggered.connect(self.export_current)
         toolbar.addAction(export_action)
         
         toolbar.addSeparator()
-        
-        # Refresh action
-        refresh_action = QAction("🔄 Refresh", self)
-        refresh_action.triggered.connect(self.load_library)
-        toolbar.addAction(refresh_action)
     
     def load_library(self):
         """Load all screenshots from database."""
@@ -195,6 +253,11 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", "Failed to load image")
             return
         
+        # Clear Undo/Redo Stacks on new load
+        self.undo_stack.clear()
+        self.redo_stack.clear()
+        self.update_undo_redo_buttons()
+        
         # Display preview
         self.display_preview(self.current_image)
         
@@ -214,7 +277,7 @@ class MainWindow(QMainWindow):
     
     def display_preview(self, image_array: np.ndarray):
         """
-        Display image in preview panel.
+        Display image in the interactive canvas.
         
         Args:
             image_array: Image as numpy array
@@ -226,14 +289,127 @@ class MainWindow(QMainWindow):
         q_image = QImage(rgb.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
         pixmap = QPixmap.fromImage(q_image)
         
-        # Scale to fit preview
-        scaled_pixmap = pixmap.scaled(
-            self.preview_label.size(),
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation
-        )
+        self.canvas.set_image(pixmap, self.sanitized_regions)
         
-        self.preview_label.setPixmap(scaled_pixmap)
+        # Connect canvas signal if not already connected (using a flag or reconnecting safely)
+        try:
+            self.canvas.edit_applied.disconnect()
+        except:
+            pass
+        self.canvas.edit_applied.connect(self.on_canvas_edit_applied)
+        
+    def set_canvas_tool(self, tool_name: str):
+        self.canvas.set_tool(tool_name)
+        self.status_bar.showMessage(f"Tool selected: {tool_name}")
+        
+    def on_canvas_edit_applied(self, tool_name: str, rect):
+        """Handle a drawing action from the canvas."""
+        if self.original_image is None or rect.isEmpty():
+            return
+            
+        x, y, w, h = int(rect.x()), int(rect.y()), int(rect.width()), int(rect.height())
+        
+        self.push_undo_state()
+        
+        if tool_name == 'highlight':
+            # Lume Highlighter
+            self.original_image = self.image_processor.add_highlight(
+                self.original_image, x, y, w, h, color=self.highlight_color, opacity=0.3
+            )
+        elif tool_name == 'blur':
+            # Selective Stylus: blur region
+            self.original_image = self.sanitizer.blur_region(
+                self.original_image, x, y, w, h, blur_strength=25
+            )
+            
+        # Re-apply adjustments to the new base original image
+        self.on_adjustments_changed(self.current_adjustments)
+        self.status_bar.showMessage(f"Applied {tool_name} to region ({x},{y},{w},{h})")
+        
+    def pick_highlight_color(self):
+        """Open color dialog to pick highlight color."""
+        from PySide6.QtWidgets import QColorDialog
+        from PySide6.QtGui import QColor
+        
+        initial = QColor(self.highlight_color[0], self.highlight_color[1], self.highlight_color[2])
+        color = QColorDialog.getColor(initial, self, "Select Highlight Color")
+        if color.isValid():
+            self.highlight_color = (color.red(), color.green(), color.blue())
+            # Update button style locally to show color (white text for dark colors)
+            luminance = (0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue()) / 255
+            text_color = "black" if luminance > 0.5 else "white"
+            self.color_btn.setStyleSheet(f"background-color: {color.name()}; color: {text_color};")
+
+    def push_undo_state(self):
+        """Save current original image state and adjustments to undo stack before modifications."""
+        if self.original_image is not None:
+            # Save a tuple: (image_copy, adjustments_copy)
+            state = (self.original_image.copy(), self.current_adjustments.copy())
+            self.undo_stack.append(state)
+            if len(self.undo_stack) > 30: # Limit stack size
+                self.undo_stack.pop(0)
+            self.redo_stack.clear()
+            self.update_undo_redo_buttons()
+
+    def undo_action(self):
+        """Undo last edit or adjustment."""
+        if self.undo_stack:
+            # Save current state to redo stack
+            current_state = (self.original_image.copy(), self.current_adjustments.copy())
+            self.redo_stack.append(current_state)
+            
+            # Pop previous state
+            prev_image, prev_adjustments = self.undo_stack.pop()
+            self.original_image = prev_image
+            
+            # Apply previous adjustments
+            # Disconnect temporarily so setting sliders doesn't trigger new undo states
+            self.adjustment_panel.adjustments_changed.disconnect(self.on_adjustments_changed)
+            self.adjustment_panel.set_adjustments(
+                brightness=prev_adjustments['brightness'],
+                contrast=prev_adjustments['contrast'],
+                sharpness=prev_adjustments['sharpness'],
+                saturation=prev_adjustments['saturation']
+            )
+            self.adjustment_panel.adjustments_changed.connect(self.on_adjustments_changed)
+            
+            # Trigger visual update
+            self.on_adjustments_changed(prev_adjustments, save_undo=False)
+            
+            self.update_undo_redo_buttons()
+            self.status_bar.showMessage("Action undone")
+            
+    def redo_action(self):
+        """Redo previously undone edit or adjustment."""
+        if self.redo_stack:
+            # Save current state to undo stack
+            current_state = (self.original_image.copy(), self.current_adjustments.copy())
+            self.undo_stack.append(current_state)
+            
+            # Pop next state
+            next_image, next_adjustments = self.redo_stack.pop()
+            self.original_image = next_image
+            
+            # Apply next adjustments
+            self.adjustment_panel.adjustments_changed.disconnect(self.on_adjustments_changed)
+            self.adjustment_panel.set_adjustments(
+                brightness=next_adjustments['brightness'],
+                contrast=next_adjustments['contrast'],
+                sharpness=next_adjustments['sharpness'],
+                saturation=next_adjustments['saturation']
+            )
+            self.adjustment_panel.adjustments_changed.connect(self.on_adjustments_changed)
+            
+            # Trigger visual update
+            self.on_adjustments_changed(next_adjustments, save_undo=False)
+            
+            self.update_undo_redo_buttons()
+            self.status_bar.showMessage("Action redone")
+            
+    def update_undo_redo_buttons(self):
+        """Enable/disable undo/redo buttons based on stack state."""
+        self.undo_btn.setEnabled(len(self.undo_stack) > 0)
+        self.redo_btn.setEnabled(len(self.redo_stack) > 0)
     
     def sharpen_current(self):
         """Apply sharpening to current screenshot."""
@@ -277,9 +453,32 @@ class MainWindow(QMainWindow):
         
         self.status_bar.showMessage("Sanitizing... (this may take a moment)")
         
+        # Extract OCR boxes first to populate canvas magnets for future manual edits
+        import tempfile, os
+        from PySide6.QtGui import QImage
+        
+        # We need the original image path or a temp path if it's from clipboard
+        if self.current_screenshot.original_path:
+            image_path = Path(self.current_screenshot.original_path)
+            
+            # Populate OCR boxes for snapping
+            all_text_boxes = self.sanitizer.detector.find_text_locations(image_path, [""]) # find all text
+            self.sanitized_regions = all_text_boxes
+            if self.current_image is not None:
+                self.display_preview(self.current_image)
+        else:
+            image_path = None
+            
+        if not image_path:
+             self.status_bar.showMessage("Cannot run auto-sanitize on unsaved images yet.")
+             return
+
+        # Push state before heavy edit
+        self.push_undo_state()
+
         # Apply sanitization
         sanitized, detected_types = self.sanitizer.auto_sanitize(
-            Path(self.current_screenshot.original_path),
+            image_path,
             method='blur'
         )
         
@@ -362,15 +561,19 @@ class MainWindow(QMainWindow):
         else:
             QMessageBox.critical(self, "Error", "Failed to export image")
     
-    def on_adjustments_changed(self, adjustments: dict):
+    def on_adjustments_changed(self, adjustments: dict, save_undo: bool = True):
         """
         Handle real-time adjustment changes with cumulative editing support.
         
         Args:
             adjustments: Dictionary of adjustment values
+            save_undo: Boolean indicating if this change should be pushed to undo stack
         """
         if self.original_image is None:
             return
+            
+        if save_undo and adjustments != self.current_adjustments:
+            self.push_undo_state()
         
         # Store current adjustments
         self.current_adjustments = adjustments
@@ -389,17 +592,7 @@ class MainWindow(QMainWindow):
         self.current_image = adjusted
         self.display_preview(adjusted)
     
-    def on_reset_adjustments(self):
-        """
-        Reset adjustments and restore original image.
-        """
-        # Restore original image and working copy
-        self.current_image = self.original_image.copy()
-        self.working_image = self.original_image.copy()
-        self.current_adjustments = {'brightness': 0, 'contrast': 0, 'saturation': 0, 'sharpness': 0}
-        self.display_preview(self.current_image)
-        
-        self.status_bar.showMessage("Adjustments reset")
+        self.display_preview(adjusted)
     
     def delete_screenshot(self, screenshot_id: int):
         """
@@ -436,8 +629,13 @@ class MainWindow(QMainWindow):
                         self.current_image = None
                         self.original_image = None
                         self.working_image = None
-                        self.preview_label.clear()
-                        self.preview_label.setText("Select a screenshot to preview")
+                        self.undo_stack.clear()
+                        self.redo_stack.clear()
+                        self.update_undo_redo_buttons()
+                        # Clear canvas
+                        blank = QPixmap(self.canvas.size())
+                        blank.fill(Qt.GlobalColor.transparent)
+                        self.canvas.set_image(blank)
                 else:
                     QMessageBox.critical(self, "Error", "Failed to delete screenshot from database")
     
@@ -531,3 +729,52 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(f"Imported {imported_count} screenshot(s)")
         self.load_library()
 
+    def on_smart_optimize_requested(self):
+        """Handle Smart Optimize request from the LIP engine."""
+        if self.original_image is None:
+            return
+            
+        brightness, contrast = self.image_processor.smart_optimize(self.original_image)
+        sharpness_score = self.image_processor.calculate_sharpness_score(self.original_image)
+        
+        # Recommend sharpness if edge density is low (e.g., var < 150)
+        sharpness = 25 if sharpness_score < 150 else 0
+        
+        # Push undo state before smart optimize wipes adjustments
+        self.push_undo_state()
+        
+        # Visually confirm by setting sliders
+        self.adjustment_panel.set_adjustments(
+            brightness=brightness,
+            contrast=contrast,
+            sharpness=sharpness
+        )
+        self.status_bar.showMessage(f"LIP Engine Optimized: B={brightness}, C={contrast}, S={sharpness}")
+
+    def keyPressEvent(self, event):
+        """Handle Ctrl+V (Paste) for direct import from clipboard."""
+        from PySide6.QtGui import QKeySequence
+        from PySide6.QtWidgets import QApplication
+        
+        if event.matches(QKeySequence.StandardKey.Paste):
+            clipboard = QApplication.clipboard()
+            image = clipboard.image()
+            if not image.isNull():
+                self.import_from_clipboard(image)
+        else:
+            super().keyPressEvent(event)
+            
+    def import_from_clipboard(self, qimage: QImage):
+        """Save clipboard image to vault via temp file."""
+        from datetime import datetime
+        import tempfile
+        import os
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        temp_dir = tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, f"clipboard_{timestamp}.png")
+        
+        if qimage.save(temp_path, "PNG"):
+            self.import_files_list([temp_path])
+        else:
+            QMessageBox.critical(self, "Error", "Failed to paste image from clipboard")

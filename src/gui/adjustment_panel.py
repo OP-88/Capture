@@ -2,9 +2,9 @@
 Adjustment Panel for granular image enhancement controls.
 Google Photos-style slider-based adjustments.
 """
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                               QSlider, QPushButton, QGroupBox)
-from PyQt6.QtCore import Qt, pyqtSignal
+from PySide6.QtCore import Qt, Signal
 from typing import Dict
 
 
@@ -12,8 +12,8 @@ class AdjustmentPanel(QWidget):
     """Google Photos-style adjustment controls."""
     
     # Signal emitted when any adjustment changes
-    adjustments_changed = pyqtSignal(dict)  # {brightness, contrast, saturation, sharpness}
-    reset_requested = pyqtSignal()
+    adjustments_changed = Signal(dict)  # {brightness, contrast, saturation, sharpness}
+    smart_optimize_requested = Signal()
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -28,6 +28,13 @@ class AdjustmentPanel(QWidget):
         # Group box for adjustments
         group = QGroupBox("Image Adjustments")
         group_layout = QVBoxLayout()
+        
+        # Smart Optimize button
+        self.smart_optimize_btn = QPushButton("Smart Optimize")
+        self.smart_optimize_btn.setStyleSheet("background-color: #00BFA5; color: white; font-weight: bold; padding: 5px;")
+        self.smart_optimize_btn.clicked.connect(self.smart_optimize_requested.emit)
+        group_layout.addWidget(self.smart_optimize_btn)
+        group_layout.addSpacing(10)
         
         # Brightness slider
         self.add_slider(
@@ -63,11 +70,6 @@ class AdjustmentPanel(QWidget):
         
         group.setLayout(group_layout)
         layout.addWidget(group)
-        
-        # Reset button
-        reset_btn = QPushButton("⟲ Reset All Adjustments")
-        reset_btn.clicked.connect(self.reset_adjustments)
-        layout.addWidget(reset_btn)
         
         # Add stretch to push controls to top
         layout.addStretch()
@@ -158,15 +160,22 @@ class AdjustmentPanel(QWidget):
             'saturation': self.sliders['saturation'].value(),
             'sharpness': self.sliders['sharpness'].value()
         }
-    
-    def reset_adjustments(self):
-        """Reset all sliders to default (0)."""
-        for key, slider in self.sliders.items():
-            default = 0 if key != 'sharpness' else 0
-            slider.setValue(default)
         
-        # Emit reset signal
-        self.reset_requested.emit()
+    def set_adjustments(self, brightness: int = None, contrast: int = None, 
+                        saturation: int = None, sharpness: int = None):
+        """
+        Programmatically set slider values (provides visual confirmation of smart edits).
+        """
+        if brightness is not None:
+            self.sliders['brightness'].setValue(brightness)
+        if contrast is not None:
+            self.sliders['contrast'].setValue(contrast)
+        if saturation is not None:
+            self.sliders['saturation'].setValue(saturation)
+        if sharpness is not None:
+            self.sliders['sharpness'].setValue(sharpness)
+    
+
     
     def set_enabled(self, enabled: bool):
         """

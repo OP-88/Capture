@@ -7,6 +7,8 @@ import cv2
 import numpy as np
 from pathlib import Path
 from typing import List, Tuple, Dict, Optional
+import math
+from collections import Counter
 try:
     import pytesseract
     TESSERACT_AVAILABLE = True
@@ -53,6 +55,32 @@ class PIIDetector:
             matches = re.findall(pattern, text)
             if matches:
                 findings[name] = matches
+                
+        # Entropy-Based Detection for high-randomness strings
+        words = re.findall(r'\b[A-Za-z0-9_\-]{16,64}\b', text)
+        high_entropy = []
+        for word in words:
+            # Calculate Shannon Entropy
+            entropy = 0.0
+            length = len(word)
+            counts = Counter(word)
+            for count in counts.values():
+                val = count / length
+                entropy += -val * math.log2(val)
+            
+            # Threshold > 4.5 is typically random / cryptographic
+            if entropy > 4.5:
+                # Make sure it's not already matched by generic regex to avoid duplicates
+                already_matched = False
+                for existing_matches in findings.values():
+                    if word in existing_matches:
+                        already_matched = True
+                        break
+                if not already_matched:
+                    high_entropy.append(word)
+                    
+        if high_entropy:
+            findings['entropy_api_key'] = high_entropy
         
         return findings
     
@@ -78,8 +106,11 @@ class PIIDetector:
             # Convert to grayscale for better OCR
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             
+            # Hardened Tesseract OCR: Apply Otsu's thresholding for better text extraction
+            _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+            
             # Extract text
-            text = pytesseract.image_to_string(gray)
+            text = pytesseract.image_to_string(thresh)
             return text
         except Exception as e:
             print(f"Error extracting text: {e}")
@@ -106,8 +137,11 @@ class PIIDetector:
             
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             
+            # Hardened Tesseract OCR: Apply Otsu's thresholding
+            _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+            
             # Get bounding box data
-            data = pytesseract.image_to_data(gray, output_type=pytesseract.Output.DICT)
+            data = pytesseract.image_to_data(thresh, output_type=pytesseract.Output.DICT)
             
             boxes = []
             for i, word in enumerate(data['text']):

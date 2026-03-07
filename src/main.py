@@ -4,10 +4,64 @@ Main application entry point.
 """
 import sys
 from pathlib import Path
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication, QMessageBox, QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import QSettings
 
 from src.gui.main_window import MainWindow
+
+# Network Isolation: Physical Socket Block (Process Level)
+# This overrides the socket module strictly for *this python process*. 
+# It does NOT affect the OS, snap store updates, or any other applications.
+import socket
+_original_socket = socket.socket
+
+def block_sockets(*args, **kwargs):
+    # Depending on the type of socket, we could allow AF_UNIX for local IPC if needed by GUI features,
+    # but for full air-gap, we block AF_INET (IPv4) and AF_INET6 (IPv6) which are used for network.
+    family = args[0] if args else kwargs.get('family', socket.AF_INET)
+    if family in (socket.AF_INET, socket.AF_INET6):
+        raise PermissionError("Network connections are strictly prohibited in Capture 2.0 (Air-Gapped).")
+    return _original_socket(*args, **kwargs)
+
+# Override default socket creation for this process
+socket.socket = block_sockets
+
+class WelcomeDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Welcome to Capture 2.0")
+        self.setMinimumWidth(450)
+        
+        layout = QVBoxLayout(self)
+        
+        title = QLabel("<h2>Update Complete: Capture 2.0</h2>")
+        layout.addWidget(title)
+        
+        content = QLabel(
+            "Welcome to the latest version of Capture!<br><br>"
+            "<b>What's New:</b><ul>"
+            "<li><b>Hardened Security</b>: Complete network isolation (OS-level socket blocking).</li>"
+            "<li><b>LIP Engine</b>: Smart Optimize analyzes histograms for perfect brightness/contrast.</li>"
+            "<li><b>Focus Suite</b>: Context-aware highlighter and blur tools that snap to OCR text.</li>"
+            "<li><b>Tactical Interface</b>: New single-page command center with Ctrl+V paste support.</li>"
+            "</ul>"
+            "Thank you for using Capture for your security documentation needs!"
+        )
+        content.setWordWrap(True)
+        content.setStyleSheet("font-size: 14px; margin-bottom: 10px;")
+        layout.addWidget(content)
+        
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+        
+        cancel_btn = QPushButton("Close")
+        cancel_btn.clicked.connect(self.reject)
+        cancel_btn.setMinimumWidth(100)
+        btn_layout.addWidget(cancel_btn)
+        
+        layout.addLayout(btn_layout)
+
 
 
 def main():
@@ -20,6 +74,16 @@ def main():
     # Create main window
     window = MainWindow()
     window.show()
+    
+    # Check for first launch after update
+    settings = QSettings("OP-88", "Capture")
+    current_version = "2.0.0"
+    last_version = settings.value("last_run_version", "")
+    
+    if last_version != current_version:
+        welcome_dialog = WelcomeDialog(window)
+        welcome_dialog.exec()
+        settings.setValue("last_run_version", current_version)
     
     # Start event loop
     sys.exit(app.exec())

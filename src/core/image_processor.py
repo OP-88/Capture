@@ -13,6 +13,53 @@ class ImageProcessor:
     """Handles image enhancement operations."""
     
     @staticmethod
+    def calculate_sharpness_score(image_array: np.ndarray) -> float:
+        """
+        Laplacian Sharpness Scorer: Measures edge density locally.
+        Returns the variance of the Laplacian.
+        """
+        try:
+            gray = cv2.cvtColor(image_array, cv2.COLOR_BGR2GRAY)
+            return cv2.Laplacian(gray, cv2.CV_64F).var()
+        except Exception as e:
+            print(f"Error calculating sharpness: {e}")
+            return 0.0
+
+    @staticmethod
+    def smart_optimize(image_array: np.ndarray) -> Tuple[int, int]:
+        """
+        Smart Optimize: Uses histogram analysis to recommend optimal brightness and contrast.
+        Returns recommended (brightness, contrast) slider values.
+        """
+        try:
+            gray = cv2.cvtColor(image_array, cv2.COLOR_BGR2GRAY)
+            # Find 1st and 99th percentiles
+            min_val = np.percentile(gray, 1)
+            max_val = np.percentile(gray, 99)
+            
+            # Target range is 0-255. We want to stretch [min_val, max_val] to [0, 255]
+            if max_val <= min_val:
+                return (0, 0)
+            
+            # Convert stretch back to slider values
+            # Contrast slider (-100 to 100) -> alpha (0.5 to 3.0)
+            alpha_needed = 255.0 / (max_val - min_val)
+            alpha_needed = max(0.5, min(alpha_needed, 3.0)) # Clamp
+            
+            contrast_slider = int(((alpha_needed - 1.0) / 2.0) * 100)
+            
+            # Brightness slider (-100 to 100) -> beta
+            # To anchor the min_val at 0: 0 = alpha_needed * min_val + beta -> beta = -alpha_needed * min_val
+            beta_needed = -alpha_needed * min_val
+            
+            brightness_slider = int(max(-100, min(100, beta_needed)))
+            
+            return (brightness_slider, contrast_slider)
+        except Exception as e:
+            print(f"Error in smart optimize: {e}")
+            return (0, 0)
+    
+    @staticmethod
     def sharpen_image(image_path: Path, strength: float = 1.5) -> Optional[np.ndarray]:
         """
         Apply unsharp mask filter to improve text legibility.

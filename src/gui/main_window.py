@@ -268,8 +268,9 @@ class MainWindow(QMainWindow):
         self.download_btn.setEnabled(True)
         self.adjustment_panel.set_enabled(True)
         
-        # Reset adjustments to default
-        self.adjustment_panel.reset_adjustments()
+        # Reset current adjustments state tracker so it starts fresh at 0
+        self.current_adjustments = {'brightness': 0, 'contrast': 0, 'saturation': 0, 'sharpness': 0}
+        self.adjustment_panel.set_adjustments(**self.current_adjustments)
         
         # Update status
         filename = Path(image_path).name

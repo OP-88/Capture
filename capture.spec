@@ -1,5 +1,5 @@
 Name:           capture
-Version:        1.0.3
+Version:        2.0.0
 Release:        1%{?dist}
 Summary:        Local-first screenshot enhancement and library tool for security professionals
 
@@ -13,7 +13,7 @@ BuildRequires:  python3-setuptools
 BuildRequires:  python3-pip
 
 Requires:       python3 >= 3.12
-Requires:       python3-PyQt6 >= 6.6.0
+Requires:       python3-pyside6 >= 6.6.0
 Requires:       python3-opencv >= 4.8.0
 Requires:       python3-pillow >= 10.1.0
 Requires:       python3-sqlalchemy >= 2.0.23

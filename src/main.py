@@ -11,21 +11,29 @@ from PySide6.QtCore import QSettings
 from src.gui.main_window import MainWindow
 
 # Network Isolation: Physical Socket Block (Process Level)
-# This overrides the socket module strictly for *this python process*. 
-# It does NOT affect the OS, snap store updates, or any other applications.
+# This provides application-level enforcement of the air-gap.
 import socket
 _original_socket = socket.socket
 
-def block_sockets(*args, **kwargs):
-    # Depending on the type of socket, we could allow AF_UNIX for local IPC if needed by GUI features,
-    # but for full air-gap, we block AF_INET (IPv4) and AF_INET6 (IPv6) which are used for network.
-    family = args[0] if args else kwargs.get('family', socket.AF_INET)
-    if family in (socket.AF_INET, socket.AF_INET6):
-        raise PermissionError("Network connections are strictly prohibited in Capture 2.0 (Air-Gapped).")
-    return _original_socket(*args, **kwargs)
+def block_sockets(family=-1, type=-1, proto=-1, fileno=None):
+    if family == -1:
+        family = socket.AF_INET
+    
+    # Block Internet protocols (IPv4, IPv6) and Packet sockets
+    if family in (socket.AF_INET, socket.AF_INET6, getattr(socket, 'AF_PACKET', None)):
+        raise PermissionError(
+            "CAPTURE SECURITY POLICY: Network access is strictly prohibited. "
+            "This application is designed to be fully air-gapped for forensic integrity."
+        )
+    return _original_socket(family, type, proto, fileno)
 
-# Override default socket creation for this process
+# Override socket constructor
 socket.socket = block_sockets
+
+# Also block high-level connection helper
+def block_create_connection(*args, **kwargs):
+    raise PermissionError("CAPTURE SECURITY POLICY: Network connections are blocked.")
+socket.create_connection = block_create_connection
 
 class WelcomeDialog(QDialog):
     def __init__(self, parent=None):

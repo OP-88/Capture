@@ -37,8 +37,10 @@ apps:
       LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
       TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
       MAGIC: $SNAP/usr/lib/file/magic.mgc
-      QT_QPA_PLATFORM: xcb
-      DISABLE_WAYLAND: "1"
+      # Enable Wayland and HiDPI scaling to fix blurriness
+      QT_QPA_PLATFORM: "wayland;xcb"
+      QT_AUTO_SCREEN_SCALE_FACTOR: "1"
+      QT_ENABLE_HIGHDPI_SCALING: "1"
 
   diagnose:
     command: bin/diagnose-launcher
@@ -52,6 +54,7 @@ apps:
       LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
       TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
       MAGIC: $SNAP/usr/lib/file/magic.mgc
+      QT_QPA_PLATFORM: "wayland;xcb"
 
 parts:
   capture:
@@ -80,6 +83,7 @@ parts:
       - libxcb-cursor0
       - libxcb-shape0
       - libxcb-xfixes0
+      - qt6-wayland
       - tesseract-ocr
       - tesseract-ocr-eng
       - libmagic1
@@ -90,9 +94,13 @@ parts:
     plugin: dump
     source: .
     override-build: |
-      # Copy the icon
+      # Copy the icon to standard locations
       mkdir -p $CRAFT_PART_INSTALL/meta/gui
       cp $CRAFT_PART_SRC/capture_icon.png $CRAFT_PART_INSTALL/meta/gui/capture.png
+      
+      # Also copy to usr/share/icons for broader compatibility
+      mkdir -p $CRAFT_PART_INSTALL/usr/share/icons/hicolor/256x256/apps
+      cp $CRAFT_PART_SRC/capture_icon.png $CRAFT_PART_INSTALL/usr/share/icons/hicolor/256x256/apps/capture.png
 
       # Create launcher script
       mkdir -p $CRAFT_PART_INSTALL/bin

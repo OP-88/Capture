@@ -295,10 +295,11 @@ class MainWindow(QMainWindow):
         
         self.canvas.set_image(pixmap, self.sanitized_regions, fit=fit)
         
-        # Connect canvas signal if not already connected (using a flag or reconnecting safely)
+        # Safely reconnect canvas signal
         try:
-            self.canvas.edit_applied.disconnect()
-        except:
+            self.canvas.edit_applied.disconnect(self.on_canvas_edit_applied)
+        except (RuntimeError, TypeError):
+            # Signal was not connected
             pass
         self.canvas.edit_applied.connect(self.on_canvas_edit_applied)
         

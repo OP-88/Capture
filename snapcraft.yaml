@@ -38,7 +38,7 @@ apps:
       - opengl
       - removable-media
     environment:
-      PYTHONPATH: $SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages
+      PYTHONPATH: $SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages
       PATH: $SNAP/bin:$SNAP/usr/bin:$PATH
       LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
       TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
@@ -53,7 +53,7 @@ apps:
       - desktop
       - x11
     environment:
-      PYTHONPATH: $SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages
+      PYTHONPATH: $SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages
       PATH: $SNAP/bin:$SNAP/usr/bin:$PATH
       LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
       TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
@@ -92,13 +92,11 @@ parts:
       - tesseract-ocr-eng
       - libmagic1
       - libmagic-mgc
-      - file # Note: 'organize' is no longer needed because setup.py installs things correctly into site-packages/bin.
+      - file
 
   local-files:
     plugin: dump
     source: .
-    build-packages:
-      - wget
     override-build: |
       # Manually copy files to the correct snap structure
       mkdir -p $CRAFT_PART_INSTALL/bin
@@ -107,8 +105,8 @@ parts:
       chmod +x $CRAFT_PART_INSTALL/bin/run.py
       chmod +x $CRAFT_PART_INSTALL/bin/diagnose.py
 
-      mkdir -p $CRAFT_PART_INSTALL/lib/python3.10/site-packages
-      cp -r $CRAFT_PART_SRC/src $CRAFT_PART_INSTALL/lib/python3.10/site-packages/
+      mkdir -p $CRAFT_PART_INSTALL/lib/python3.13/site-packages
+      cp -r $CRAFT_PART_SRC/src $CRAFT_PART_INSTALL/lib/python3.13/site-packages/
 
   launcher:
     plugin: dump
@@ -122,7 +120,7 @@ parts:
       mkdir -p $CRAFT_PART_INSTALL/bin
       cat > $CRAFT_PART_INSTALL/bin/capture-launcher << 'EOF'
       #!/bin/bash
-      export PYTHONPATH="$SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages"
+      export PYTHONPATH="$SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages"
       exec python3 "$SNAP/bin/run.py" "$@"
       EOF
       chmod +x $CRAFT_PART_INSTALL/bin/capture-launcher
@@ -130,15 +128,7 @@ parts:
       # Create diagnose launcher
       cat > $CRAFT_PART_INSTALL/bin/diagnose-launcher << 'EOF'
       #!/bin/bash
-      export PYTHONPATH="$SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages"
-      exec python3 "$SNAP/bin/diagnose.py" "$@"
-      EOF
-      chmod +x $CRAFT_PART_INSTALL/bin/diagnose-launcher
-
-      # Create diagnose launcher
-      cat > $CRAFT_PART_INSTALL/bin/diagnose-launcher << 'EOF'
-      #!/bin/bash
-      export PYTHONPATH="$SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages"
+      export PYTHONPATH="$SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages"
       exec python3 "$SNAP/bin/diagnose.py" "$@"
       EOF
       chmod +x $CRAFT_PART_INSTALL/bin/diagnose-launcher

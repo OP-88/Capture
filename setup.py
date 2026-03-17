@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="capture",
-    version="1.0.5",
+    version="2.0.2",
     packages=find_packages(),
     scripts=["run.py"],
     install_requires=[

@@ -17,15 +17,18 @@ class CanvasView(QGraphicsView):
         self.setScene(self.scene_obj)
         
         self.image_item = QGraphicsPixmapItem()
+        self.image_item.setTransformationMode(Qt.TransformationMode.SmoothTransformation)
         self.scene_obj.addItem(self.image_item)
         
         # Transparent overlay for non-destructive edits
         self.overlay_item = QGraphicsPixmapItem()
+        self.overlay_item.setTransformationMode(Qt.TransformationMode.SmoothTransformation)
         self.overlay_item.setZValue(1)
         self.scene_obj.addItem(self.overlay_item)
         
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.setRenderHint(QPainter.RenderHint.TextAntialiasing)
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)  # Lanczos-quality rescaling
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         
@@ -44,19 +47,19 @@ class CanvasView(QGraphicsView):
         self.selection_rect_item.hide()
         self.scene_obj.addItem(self.selection_rect_item)
         
-    def set_image(self, pixmap: QPixmap, ocr_boxes=None):
+    def set_image(self, pixmap: QPixmap, ocr_boxes=None, fit=True):
         """Set the background image."""
+        # Only recreate overlay if size changed
+        if not self.overlay_item.pixmap() or self.overlay_item.pixmap().size() != pixmap.size():
+            overlay_pix = QPixmap(pixmap.size())
+            overlay_pix.fill(Qt.GlobalColor.transparent)
+            self.overlay_item.setPixmap(overlay_pix)
+            
         self.image_item.setPixmap(pixmap)
         self.scene_obj.setSceneRect(QRectF(pixmap.rect()))
         
-        # Create a blank transparent overlay of the same size
-        overlay_pix = QPixmap(pixmap.size())
-        overlay_pix.fill(Qt.GlobalColor.transparent)
-        self.overlay_item.setPixmap(overlay_pix)
-        
-        self.overlay_item.setPixmap(overlay_pix)
-        
-        self.fitInView(self.scene_obj.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+        if fit:
+            self.fitInView(self.scene_obj.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
         self.viewport().update()  # Force high-res redraw after loading
         
     def set_tool(self, tool_name: str):

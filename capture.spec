@@ -1,5 +1,5 @@
 Name:           capture
-Version:        2.0.1
+Version:        2.0.2
 Release:        1%{?dist}
 Summary:        Local-first screenshot enhancement and library tool for security professionals
 

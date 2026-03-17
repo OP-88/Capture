@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.github.OP88.Capture</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Capture</name>
+  <summary>Screenshot enhancement and library tool for security professionals</summary>
+  
+  <description>
+    <p>
+      Capture is a local-first screenshot enhancement and library tool designed for 
+      security professionals and developers. It provides forensic-grade screenshot 
+      management with PII sanitization, chain-of-custody tracking, and report-ready 
+      image enhancement.
+    </p>
+    <p>Key Features:</p>
+    <ul>
+      <li>📚 Screenshot library with grid view and search</li>
+      <li>🎨 Granular image adjustments (brightness, contrast, saturation, sharpness)</li>
+      <li>🔒 PII sanitization with OCR + regex detection</li>
+      <li>💾 Secure export with EXIF stripping</li>
+      <li>💻 100% local processing (zero cloud uploads)</li>
+      <li>📋 Chain-of-custody tracking for originals vs. modified versions</li>
+    </ul>
+    <p>
+      Perfect for cybersecurity audits, penetration testing reports, and any scenario 
+      where you need professional screenshot documentation without cloud security risks.
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">com.github.OP88.Capture.desktop</launchable>
+  
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main library interface with grid view</caption>
+    </screenshot>
+  </screenshots>
+  
+  <url type="homepage">https://github.com/OP-88/Capture</url>
+  <url type="bugtracker">https://github.com/OP-88/Capture/issues</url>
+  <url type="vcs-browser">https://github.com/OP-88/Capture</url>
+  
+  <developer_name>OP-88</developer_name>
+  <update_contact>op88@example.com</update_contact>
+  
+  <provides>
+    <binary>capture</binary>
+  </provides>
+  
+  <releases>
+    <release version="2.0.2" date="2026-03-17">
+      <description>
+        <p>Forensic-Grade Rendering Hotfix</p>
+        <ul>
+          <li>Fixed Global Canvas Degradation bug causing blurry text in terminal captures</li>
+          <li>Optimized local vault thumbnails to resolve distortion and aspect ratio issues</li>
+          <li>Enhanced HiDPI support for sharp rendering on Fedora/GNOME 4k displays</li>
+          <li>Improved render pipeline stability and buffer memory management</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2.0.1" date="2026-03-14">
+      <description>
+        <p>Initial 2.0 series stabilization</p>
+      </description>
+    </release>
+      <description>
+        <p>Flatpak packaging release</p>
+        <ul>
+          <li>Added Flatpak support for universal Linux distribution</li>
+          <li>Bundled Python 3.12 and all dependencies</li>
+          <li>Desktop integration with app stores</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.0.2" date="2025-01-08">
+      <description>
+        <p>UI Improvements</p>
+        <ul>
+          <li>Dark mode dialog refinements</li>
+          <li>Fixed obscuring edit bug</li>
+          <li>Enhanced context menu styling</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.0.0" date="2025-01-08">
+      <description>
+        <p>Initial release</p>
+        <ul>
+          <li>PyQt6 GUI with dark GNOME-native theme</li>
+          <li>SQLAlchemy database for chain-of-custody tracking</li>
+          <li>Image processor with sharpen, highlight, and upscale features</li>
+          <li>PII sanitizer with OCR + regex detection</li>
+          <li>Secure export with clipboard and EXIF stripping</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+  
+  <content_rating type="oars-1.1" />
+  
+  <categories>
+    <category>Graphics</category>
+    <category>Photography</category>
+    <category>Utility</category>
+  </categories>
+  
+  <keywords>
+    <keyword>screenshot</keyword>
+    <keyword>image</keyword>
+    <keyword>enhancement</keyword>
+    <keyword>security</keyword>
+    <keyword>pii</keyword>
+    <keyword>sanitization</keyword>
+    <keyword>ocr</keyword>
+  </keywords>
+</component>

@@ -66,7 +66,6 @@ parts:
     python-packages:
       - . # Installs via setup.py
     build-environment:
-      # Speed optimization - use prebuilt wheels
       - PIP_NO_CACHE_DIR: "true"
       - PIP_PREFER_BINARY: "1"
     build-packages:
@@ -74,7 +73,6 @@ parts:
       - python3-pip
       - git
     stage-packages:
-      # CRITICAL: GUI libraries (Jammy compatible)
       - libgl1
       - libegl1
       - libxkbcommon-x11-0
@@ -93,20 +91,14 @@ parts:
       - libmagic1
       - libmagic-mgc
       - file
-
-  local-files:
-    plugin: dump
-    source: .
-    override-build: |
-      # Manually copy files to the correct snap structure
-      mkdir -p $CRAFT_PART_INSTALL/bin
-      cp $CRAFT_PART_SRC/run.py $CRAFT_PART_INSTALL/bin/
-      cp $CRAFT_PART_SRC/diagnose.py $CRAFT_PART_INSTALL/bin/
-      chmod +x $CRAFT_PART_INSTALL/bin/run.py
-      chmod +x $CRAFT_PART_INSTALL/bin/diagnose.py
-
-      mkdir -p $CRAFT_PART_INSTALL/lib/python3.13/site-packages
-      cp -r $CRAFT_PART_SRC/src $CRAFT_PART_INSTALL/lib/python3.13/site-packages/
+    override-prime: |
+      craftctl default
+      # Ensure scripts are executable and in the right place
+      mkdir -p $CRAFT_PRIME/bin
+      cp $CRAFT_PRIME/lib/python3.13/site-packages/run.py $CRAFT_PRIME/bin/run.py || cp run.py $CRAFT_PRIME/bin/run.py
+      cp $CRAFT_PRIME/lib/python3.13/site-packages/diagnose.py $CRAFT_PRIME/bin/diagnose.py || cp diagnose.py $CRAFT_PRIME/bin/diagnose.py
+      chmod +x $CRAFT_PRIME/bin/run.py
+      chmod +x $CRAFT_PRIME/bin/diagnose.py
 
   launcher:
     plugin: dump

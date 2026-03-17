@@ -31,7 +31,8 @@ apps:
       - opengl
       - removable-media
     environment:
-      PYTHONPATH: $SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages
+      # Core22 uses python 3.10
+      PYTHONPATH: $SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages
       PATH: $SNAP/bin:$SNAP/usr/bin:$PATH
       LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
       TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
@@ -46,7 +47,7 @@ apps:
       - desktop
       - x11
     environment:
-      PYTHONPATH: $SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages
+      PYTHONPATH: $SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages
       PATH: $SNAP/bin:$SNAP/usr/bin:$PATH
       LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
       TESSDATA_PREFIX: $SNAP/usr/share/tesseract-ocr/4.00/tessdata
@@ -97,24 +98,16 @@ parts:
       mkdir -p $CRAFT_PART_INSTALL/bin
       cat > $CRAFT_PART_INSTALL/bin/capture-launcher << 'EOF'
       #!/bin/bash
-      export PYTHONPATH="$SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages"
-      # Use the snap's python to ensure version consistency
-      if [ -f "$SNAP/bin/run" ]; then
-          exec "$SNAP/usr/bin/python3" "$SNAP/bin/run" "$@"
-      else
-          exec "$SNAP/usr/bin/python3" "$SNAP/bin/run.py" "$@"
-      fi
+      export PYTHONPATH="$SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages"
+      # Use the snap's python3 (which points to 3.10 in core22)
+      exec "$SNAP/bin/python3" "$SNAP/bin/run" "$@"
       EOF
       chmod +x $CRAFT_PART_INSTALL/bin/capture-launcher
 
       # Create diagnose launcher
       cat > $CRAFT_PART_INSTALL/bin/diagnose-launcher << 'EOF'
       #!/bin/bash
-      export PYTHONPATH="$SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages"
-      if [ -f "$SNAP/bin/diagnose" ]; then
-          exec "$SNAP/usr/bin/python3" "$SNAP/bin/diagnose" "$@"
-      else
-          exec "$SNAP/usr/bin/python3" "$SNAP/bin/diagnose.py" "$@"
-      fi
+      export PYTHONPATH="$SNAP/lib/python3.10/site-packages:$SNAP/usr/lib/python3/dist-packages"
+      exec "$SNAP/bin/python3" "$SNAP/bin/diagnose" "$@"
       EOF
       chmod +x $CRAFT_PART_INSTALL/bin/diagnose-launcher

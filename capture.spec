@@ -1,5 +1,5 @@
 Name:           capture
-Version:        2.0.0
+Version:        2.0.1
 Release:        1%{?dist}
 Summary:        Local-first screenshot enhancement and library tool for security professionals
 
@@ -105,11 +105,10 @@ if [ "$1" -eq 1 ]; then
 fi
 
 %changelog
-* Wed Jan 08 2025 OP-88 <op88@example.com> - 1.0.0-1
-- Initial release
-- PyQt6 GUI with dark GNOME-native theme
-- SQLAlchemy database for chain-of-custody tracking
-- Image processor with sharpen, highlight, and upscale features
-- PII sanitizer with OCR + regex detection
-- Secure export with clipboard and EXIF stripping
-- Comprehensive security validation
+* Sat Mar 08 2026 OP-88 <op88@example.com> - 2.0.0-1
+- PySide6 migration, LIP Engine, Focus Suite, Undo/Redo
+
+* Mon Mar 17 2026 OP-88 <op88@example.com> - 2.0.1-1
+- Hotfix: Enabled SmoothPixmapTransform for anti-aliased canvas rendering
+- Hotfix: Switched thumbnail generation to INTER_AREA for sharper forensic-grade previews
+- Hotfix: Forced viewport redraw after image load to eliminate stale low-res cache

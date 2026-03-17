@@ -152,7 +152,7 @@ class LibraryView(QWidget):
                 new_height = max_size
                 new_width = int(width * (max_size / height))
             
-            resized = cv2.resize(img, (new_width, new_height))
+            resized = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_AREA)
             
             # Convert to QPixmap
             rgb = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)

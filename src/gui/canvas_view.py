@@ -26,6 +26,7 @@ class CanvasView(QGraphicsView):
         
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)  # Lanczos-quality rescaling
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         
         self.current_tool = 'highlight'  # Default to highlight instead of pan
@@ -56,6 +57,7 @@ class CanvasView(QGraphicsView):
         self.overlay_item.setPixmap(overlay_pix)
         
         self.fitInView(self.scene_obj.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+        self.viewport().update()  # Force high-res redraw after loading
         
     def set_tool(self, tool_name: str):
         self.current_tool = tool_name

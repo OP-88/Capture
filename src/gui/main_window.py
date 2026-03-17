@@ -258,8 +258,8 @@ class MainWindow(QMainWindow):
         self.redo_stack.clear()
         self.update_undo_redo_buttons()
         
-        # Display preview
-        self.display_preview(self.current_image)
+        # Display preview (Force fit for new selection)
+        self.display_preview(self.current_image, fit=True)
         
         # Enable action buttons and adjustment panel
         self.sharpen_btn.setEnabled(True)
@@ -276,21 +276,24 @@ class MainWindow(QMainWindow):
         filename = Path(image_path).name
         self.status_bar.showMessage(f"Selected: {filename}")
     
-    def display_preview(self, image_array: np.ndarray):
+    def display_preview(self, image_array: np.ndarray, fit: bool = False):
         """
         Display image in the interactive canvas.
         
         Args:
             image_array: Image as numpy array
+            fit: Whether to fit image in view (reset zoom)
         """
         # Convert to QPixmap
         rgb = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
         height, width, channel = rgb.shape
         bytes_per_line = 3 * width
-        q_image = QImage(rgb.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
+        
+        # Explicit copy to ensure data persists after the cv2 buffer goes out of scope
+        q_image = QImage(rgb.data, width, height, bytes_per_line, QImage.Format.Format_RGB888).copy()
         pixmap = QPixmap.fromImage(q_image)
         
-        self.canvas.set_image(pixmap, self.sanitized_regions)
+        self.canvas.set_image(pixmap, self.sanitized_regions, fit=fit)
         
         # Connect canvas signal if not already connected (using a flag or reconnecting safely)
         try:
@@ -442,7 +445,7 @@ class MainWindow(QMainWindow):
             
             # Update current image and display
             self.current_image = sharpened
-            self.display_preview(sharpened)
+            self.display_preview(sharpened, fit=False)
             self.status_bar.showMessage("Sharpening applied")
         else:
             QMessageBox.critical(self, "Error", "Failed to save sharpened image")
@@ -466,7 +469,7 @@ class MainWindow(QMainWindow):
             all_text_boxes = self.sanitizer.detector.find_text_locations(image_path, [""]) # find all text
             self.sanitized_regions = all_text_boxes
             if self.current_image is not None:
-                self.display_preview(self.current_image)
+                self.display_preview(self.current_image, fit=False)
         else:
             image_path = None
             
@@ -591,9 +594,7 @@ class MainWindow(QMainWindow):
         # Update working image and current image
         self.working_image = adjusted.copy()
         self.current_image = adjusted
-        self.display_preview(adjusted)
-    
-        self.display_preview(adjusted)
+        self.display_preview(adjusted, fit=False)
     
     def delete_screenshot(self, screenshot_id: int):
         """

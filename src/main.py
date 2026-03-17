@@ -78,7 +78,6 @@ def main():
     # Check for first launch after update
     # settings = QSettings("OP-88", "Capture")
     current_version = "2.0.2"
-
     # last_version = settings.value("last_run_version", "")
     
     # if last_version != current_version:

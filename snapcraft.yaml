@@ -94,17 +94,15 @@ parts:
       cp $CRAFT_PART_SRC/capture_icon.png $CRAFT_PART_INSTALL/meta/gui/capture.png
 
       # Create launcher script
-      # setup.py installs run.py as $SNAP/bin/run
       mkdir -p $CRAFT_PART_INSTALL/bin
       cat > $CRAFT_PART_INSTALL/bin/capture-launcher << 'EOF'
       #!/bin/bash
       export PYTHONPATH="$SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages"
-      # If installed via setup.py, 'run' script is in bin
+      # Use the snap's python to ensure version consistency
       if [ -f "$SNAP/bin/run" ]; then
-          exec "$SNAP/bin/run" "$@"
+          exec "$SNAP/usr/bin/python3" "$SNAP/bin/run" "$@"
       else
-          # Fallback if python plugin behavior differs
-          exec python3 "$SNAP/bin/run.py" "$@"
+          exec "$SNAP/usr/bin/python3" "$SNAP/bin/run.py" "$@"
       fi
       EOF
       chmod +x $CRAFT_PART_INSTALL/bin/capture-launcher
@@ -114,9 +112,9 @@ parts:
       #!/bin/bash
       export PYTHONPATH="$SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages"
       if [ -f "$SNAP/bin/diagnose" ]; then
-          exec "$SNAP/bin/diagnose" "$@"
+          exec "$SNAP/usr/bin/python3" "$SNAP/bin/diagnose" "$@"
       else
-          exec python3 "$SNAP/bin/diagnose.py" "$@"
+          exec "$SNAP/usr/bin/python3" "$SNAP/bin/diagnose.py" "$@"
       fi
       EOF
       chmod +x $CRAFT_PART_INSTALL/bin/diagnose-launcher

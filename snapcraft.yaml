@@ -6,13 +6,6 @@ description: |
   Capture is a forensic-grade desktop application for security professionals
   that enhances screenshot quality, sanitizes PII, and maintains chain-of-custody.
 
-  Features:
-  - Granular image adjustments (brightness, contrast, saturation, sharpness)
-  - Automatic PII detection and redaction (IPs, API keys, emails, tokens)
-  - Screenshot library with grid view and tagging
-  - 100% local processing - zero cloud uploads
-  - Dark-themed GNOME integration
-
 license: MIT
 website: https://github.com/verba-mvp/capture
 source-code: https://github.com/verba-mvp/capture
@@ -91,14 +84,6 @@ parts:
       - libmagic1
       - libmagic-mgc
       - file
-    override-prime: |
-      craftctl default
-      # Ensure scripts are executable and in the right place
-      mkdir -p $CRAFT_PRIME/bin
-      cp $CRAFT_PRIME/lib/python3.13/site-packages/run.py $CRAFT_PRIME/bin/run.py || cp run.py $CRAFT_PRIME/bin/run.py
-      cp $CRAFT_PRIME/lib/python3.13/site-packages/diagnose.py $CRAFT_PRIME/bin/diagnose.py || cp diagnose.py $CRAFT_PRIME/bin/diagnose.py
-      chmod +x $CRAFT_PRIME/bin/run.py
-      chmod +x $CRAFT_PRIME/bin/diagnose.py
 
   launcher:
     plugin: dump
@@ -109,11 +94,18 @@ parts:
       cp $CRAFT_PART_SRC/capture_icon.png $CRAFT_PART_INSTALL/meta/gui/capture.png
 
       # Create launcher script
+      # setup.py installs run.py as $SNAP/bin/run
       mkdir -p $CRAFT_PART_INSTALL/bin
       cat > $CRAFT_PART_INSTALL/bin/capture-launcher << 'EOF'
       #!/bin/bash
       export PYTHONPATH="$SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages"
-      exec python3 "$SNAP/bin/run.py" "$@"
+      # If installed via setup.py, 'run' script is in bin
+      if [ -f "$SNAP/bin/run" ]; then
+          exec "$SNAP/bin/run" "$@"
+      else
+          # Fallback if python plugin behavior differs
+          exec python3 "$SNAP/bin/run.py" "$@"
+      fi
       EOF
       chmod +x $CRAFT_PART_INSTALL/bin/capture-launcher
 
@@ -121,6 +113,10 @@ parts:
       cat > $CRAFT_PART_INSTALL/bin/diagnose-launcher << 'EOF'
       #!/bin/bash
       export PYTHONPATH="$SNAP/lib/python3.13/site-packages:$SNAP/usr/lib/python3/dist-packages"
-      exec python3 "$SNAP/bin/diagnose.py" "$@"
+      if [ -f "$SNAP/bin/diagnose" ]; then
+          exec "$SNAP/bin/diagnose" "$@"
+      else
+          exec python3 "$SNAP/bin/diagnose.py" "$@"
+      fi
       EOF
       chmod +x $CRAFT_PART_INSTALL/bin/diagnose-launcher

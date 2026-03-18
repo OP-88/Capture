@@ -143,7 +143,7 @@ class LibraryView(QWidget):
             
             # Resize to thumbnail size
             height, width = img.shape[:2]
-            max_size = 200
+            max_size = 512
             
             if width > height:
                 new_width = max_size
@@ -152,7 +152,7 @@ class LibraryView(QWidget):
                 new_height = max_size
                 new_width = int(width * (max_size / height))
             
-            resized = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_AREA)
+            resized = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4)
             
             # Convert to QPixmap
             rgb = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)

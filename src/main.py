@@ -78,6 +78,7 @@ def main():
     app = QApplication(sys.argv)
     app.setApplicationName("Capture")
     app.setOrganizationName("OP-88")
+    app.setDesktopFileName("capture_capture.desktop")
     
     # Create main window
     window = MainWindow()

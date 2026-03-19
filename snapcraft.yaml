@@ -22,7 +22,6 @@ apps:
   capture:
     command: bin/capture-launcher
     desktop: snap/gui/capture.desktop
-    startup-notify: true
     plugs:
       - home
       - desktop

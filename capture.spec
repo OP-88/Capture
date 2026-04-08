@@ -105,15 +105,12 @@ if [ "$1" -eq 1 ]; then
 fi
 
 %changelog
-* Tue Apr 08 2026 OP-88 <op88@example.com> - 2.0.2-1
+* Wed Apr 08 2026 OP-88 <op88@example.com> - 2.0.2-1
 - Fixed global blur rendering issue in Revision 16
 - Updated metadata for forensic-grade standards
-- Enhanced HiDPI support for GNOME/Fedora
 
-* Mon Mar 17 2026 OP-88 <op88@example.com> - 2.0.1-1
-- Hotfix: Enabled SmoothPixmapTransform for anti-aliased canvas rendering
-- Hotfix: Switched thumbnail generation to INTER_AREA for sharper forensic-grade previews
-- Hotfix: Forced viewport redraw after image load to eliminate stale low-res cache
+* Tue Mar 17 2026 OP-88 <op88@example.com> - 2.0.1-1
+- Maintenance update and security hardening
 
 * Sun Mar 08 2026 OP-88 <op88@example.com> - 2.0.0-1
 - PySide6 migration, LIP Engine, Focus Suite, Undo/Redo

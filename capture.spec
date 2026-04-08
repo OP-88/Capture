@@ -1,5 +1,5 @@
 Name:           capture
-Version:        2.0.2
+Version:        2.0.3
 Release:        1%{?dist}
 Summary:        Local-first screenshot enhancement and library tool for security professionals
 
@@ -105,6 +105,9 @@ if [ "$1" -eq 1 ]; then
 fi
 
 %changelog
+* Wed Apr 08 2026 OP-88 2.0.3-1
+- new package built with tito
+
 * Wed Apr 08 2026 OP-88 <op88@example.com> - 2.0.2-1
 - Fixed global blur rendering issue in Revision 16
 - Updated metadata for forensic-grade standards

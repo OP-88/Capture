@@ -25,7 +25,7 @@ permissions:
   contents: read
 
 jobs:
-  # CI must pass first before we even attempt a snap build
+  # ── Gate: tests must pass before we build anything ──────────────────────────
   test:
     name: Run test suite (gate)
     runs-on: ubuntu-22.04
@@ -64,9 +64,39 @@ jobs:
       - name: Run test suite
         run: ./venv/bin/python test_capture.py
 
-  build-snap:
-    name: Build snap (${{ matrix.arch }})
-    needs: test          # only runs if tests pass
+  # ── Determine publish channel once ──────────────────────────────────────────
+  setup:
+    name: Determine channel
+    needs: test
+    runs-on: ubuntu-22.04
+    outputs:
+      channel: ${{ steps.channel.outputs.CHANNEL }}
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Determine channel
+        id: channel
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            CHANNEL="${{ github.event.inputs.channel }}"
+          else
+            CHANNEL="stable"
+          fi
+          echo "CHANNEL=$CHANNEL" >> $GITHUB_OUTPUT
+
+  # ── Build AND publish per arch in one job (no download step needed) ──────────
+  build-and-publish:
+    name: Build & publish snap (${{ matrix.arch }})
+    needs: setup
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -80,71 +110,29 @@ jobs:
         if: matrix.arch == 'arm64'
         uses: docker/setup-qemu-action@v3
 
-      - name: Determine version
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            VERSION="${{ github.event.inputs.version }}"
-          else
-            VERSION="${GITHUB_REF#refs/tags/v}"
-          fi
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "Building snap version: $VERSION"
-
       - name: Update snapcraft.yaml version
         run: |
-          VERSION="${{ steps.version.outputs.VERSION }}"
+          VERSION="${{ needs.setup.outputs.version }}"
           sed -i "s/^version:.*/version: \"${VERSION}\"/" snapcraft.yaml
           grep "^version:" snapcraft.yaml
 
       - name: Build snap
-        uses: snapcore/action-build@v1
         id: build
+        uses: snapcore/action-build@v1
         with:
           snapcraft-args: --destructive-mode
 
-      - name: Upload snap artifact
+      - name: Upload snap artifact (for reference)
         uses: actions/upload-artifact@v4
         with:
-          name: capture-snap-${{ matrix.arch }}
+          name: capture-snap-${{ matrix.arch }}-${{ needs.setup.outputs.version }}
           path: ${{ steps.build.outputs.snap }}
           retention-days: 30
 
-  publish-snap:
-    name: Publish to Snap Store
-    needs: build-snap    # only runs after both arch builds succeed
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Download amd64 snap
-        uses: actions/download-artifact@v4
-        with:
-          name: capture-snap-amd64
-          path: snaps/
-
-      - name: Download arm64 snap
-        uses: actions/download-artifact@v4
-        with:
-          name: capture-snap-arm64
-          path: snaps/
-
-      - name: Determine publish channel
-        id: channel
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            CHANNEL="${{ github.event.inputs.channel }}"
-          else
-            CHANNEL="stable"
-          fi
-          echo "CHANNEL=$CHANNEL" >> $GITHUB_OUTPUT
-          echo "Publishing to channel: $CHANNEL"
-
-      - name: Publish snaps to Snap Store
-        run: |
-          sudo snap install snapcraft --classic
-          for snap_file in snaps/*.snap; do
-            echo "Publishing: $snap_file to ${{ steps.channel.outputs.CHANNEL }}"
-            snapcraft upload --release="${{ steps.channel.outputs.CHANNEL }}" "$snap_file"
-          done
+      - name: Publish snap to Snap Store
+        uses: snapcore/action-publish@v1
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        with:
+          snap: ${{ steps.build.outputs.snap }}
+          release: ${{ needs.setup.outputs.channel }}

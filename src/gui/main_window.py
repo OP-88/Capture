@@ -103,7 +103,7 @@ class MainWindow(QMainWindow):
         self.copy_btn.setEnabled(False)
         button_layout.addWidget(self.copy_btn)
         
-        self.download_btn = QPushButton("💾 Download Image")
+        self.download_btn = QPushButton("Download Image")
         self.download_btn.clicked.connect(self.download_to_pictures)
         self.download_btn.setEnabled(False)
         button_layout.addWidget(self.download_btn)

@@ -103,10 +103,11 @@ class MainWindow(QMainWindow):
         self.copy_btn.setEnabled(False)
         button_layout.addWidget(self.copy_btn)
         
-        self.download_btn = QPushButton("Download to Pictures")
+        self.download_btn = QPushButton("💾 Download Image")
         self.download_btn.clicked.connect(self.download_to_pictures)
         self.download_btn.setEnabled(False)
         button_layout.addWidget(self.download_btn)
+
         
         # Undo / Redo Buttons
         self.undo_btn = QPushButton("Undo")
@@ -643,29 +644,89 @@ class MainWindow(QMainWindow):
                     QMessageBox.critical(self, "Error", "Failed to delete screenshot from database")
     
     def download_to_pictures(self):
-        """Download current working image to ~/Pictures/Capture/"""
-        if self.working_image is None:
+        """Download the current edited image — user picks the destination folder."""
+        # Use working_image (has adjustments applied); fall back to current_image
+        # so that sharpen/sanitize-only edits are also captured correctly.
+        image_to_save = self.working_image if self.working_image is not None else self.current_image
+        if image_to_save is None:
             return
-        
-        # Create Capture folder in Pictures
+
         from datetime import datetime
-        pictures_dir = Path.home() / "Pictures" / "Capture"
-        pictures_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Generate filename with timestamp
+        from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem, QDialogButtonBox
+
+        home = Path.home()
+
+        # Common destination folders
+        common_dirs = [
+            ("🏠  Home",      home),
+            ("🖼️  Pictures",  home / "Pictures"),
+            ("📄  Documents", home / "Documents"),
+            ("📥  Downloads", home / "Downloads"),
+            ("🎵  Music",     home / "Music"),
+            ("🎬  Videos",    home / "Videos"),
+            ("🖥️  Desktop",   home / "Desktop"),
+        ]
+
+        # Build the picker dialog
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Save Image — Choose Destination")
+        dialog.setMinimumWidth(380)
+        layout = QVBoxLayout(dialog)
+
+        label = QLabel("Where would you like to save the image?")
+        label.setStyleSheet("font-size: 13px; margin-bottom: 6px;")
+        layout.addWidget(label)
+
+        list_widget = QListWidget()
+        list_widget.setStyleSheet("font-size: 13px;")
+        for display_name, _ in common_dirs:
+            item = QListWidgetItem(display_name)
+            list_widget.addItem(item)
+        list_widget.addItem("📂  Browse…")
+        list_widget.setCurrentRow(0)
+        layout.addWidget(list_widget)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addWidget(buttons)
+
+        # Also accept on double-click
+        list_widget.itemDoubleClicked.connect(lambda _: dialog.accept())
+
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        selected_row = list_widget.currentRow()
+
+        if selected_row < len(common_dirs):
+            dest_folder = common_dirs[selected_row][1]
+        else:
+            # "Browse…" — let the user pick any folder
+            dest_folder_str = QFileDialog.getExistingDirectory(
+                self, "Choose Folder", str(home)
+            )
+            if not dest_folder_str:
+                return
+            dest_folder = Path(dest_folder_str)
+
+        # Make sure the folder exists
+        dest_folder.mkdir(parents=True, exist_ok=True)
+
+        # Generate unique filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"capture_{timestamp}.png"
-        save_path = pictures_dir / filename
-        
-        # Save with EXIF stripping (use working_image which has all edits)
-        if self.exporter.save_with_exif_strip(self.working_image, save_path, 'PNG'):
-            self.status_bar.showMessage(f"Downloaded to {save_path}")
+        save_path = dest_folder / filename
+
+        # Save with EXIF stripping
+        if self.exporter.save_with_exif_strip(image_to_save, save_path, 'PNG'):
+            self.status_bar.showMessage(f"Saved to {save_path}")
             QMessageBox.information(
-                self, "Success",
-                f"Image saved to:\n{save_path}"
+                self, "Image Saved",
+                f"✅ Image saved to:\n{save_path}"
             )
         else:
-            QMessageBox.critical(self, "Error", "Failed to download image")
+            QMessageBox.critical(self, "Error", "Failed to save image — please try again.")
 
     # Drag and Drop Events
     def dragEnterEvent(self, event):

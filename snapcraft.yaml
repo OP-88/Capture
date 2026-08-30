@@ -6,10 +6,11 @@ description: |
   Capture is a forensic-grade desktop application for security professionals
   that enhances screenshot quality, sanitizes PII, and maintains chain-of-custody.
 
-license: MIT
-website: https://github.com/verba-mvp/capture
-source-code: https://github.com/verba-mvp/capture
-issues: https://github.com/verba-mvp/capture/issues
+license: GPL-3.0
+website: https://github.com/OP-88/Capture
+source-code: https://github.com/OP-88/Capture
+issues: https://github.com/OP-88/Capture/issues
+
 
 grade: stable
 confinement: strict

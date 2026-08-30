@@ -1,0 +1,61 @@
+name: CI — Build & Test
+
+on:
+  push:
+    branches: ["main", "dev", "feature/**"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    name: Run test suite
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            python3 python3-pip python3-venv \
+            tesseract-ocr tesseract-ocr-eng \
+            libmagic1 libmagic-dev \
+            libgl1 libegl1 libxkbcommon-x11-0 \
+            libdbus-1-3 libxcb-icccm4 libxcb-image0 \
+            libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
+            libxcb-xinerama0 libxcb-cursor0 libxcb-shape0 libxcb-xfixes0 \
+            xvfb
+
+      - name: Set up Python virtual environment
+        run: |
+          python3 -m venv venv
+          ./venv/bin/pip install --upgrade pip
+          ./venv/bin/pip install -r requirements.txt
+
+      - name: Create test fixture image
+        run: |
+          mkdir -p /tmp/capture_test
+          ./venv/bin/python3 -c "
+          from PIL import Image
+          img = Image.new('RGB', (800, 600), color=(30, 30, 30))
+          img.save('/tmp/capture_test/test_screenshot.png')
+          print('Test fixture created: 800x600 PNG')
+          "
+
+      - name: Run test suite
+        run: |
+          ./venv/bin/python test_capture.py
+
+      - name: Verify import of all modules
+        run: |
+          ./venv/bin/python -c "
+          from src.core.database import DatabaseManager
+          from src.core.image_processor import ImageProcessor
+          from src.core.sanitizer import PIISanitizer
+          from src.core.exporter import Exporter
+          from src.utils.security import SecurityValidator
+          from src.utils.metadata import MetadataHandler
+          print('All modules imported successfully')
+          "

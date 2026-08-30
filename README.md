@@ -8,23 +8,34 @@
 
 **A Local-First Screenshot Enhancement & Library Tool for Security Professionals**
 
-[![Fedora 41](https://img.shields.io/badge/Fedora-41-blue?logo=fedora)](https://getfedora.org/)
+[![Fedora](https://img.shields.io/badge/Fedora-Linux-blue?logo=fedora)](https://getfedora.org/)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12+-blue?logo=python)](https://www.python.org/)
-[![PyQt6](https://img.shields.io/badge/GUI-PyQt6-green?logo=qt)](https://www.riverbankcomputing.com/software/pyqt/)
+[![PySide6](https://img.shields.io/badge/GUI-PySide6-green?logo=qt)](https://doc.qt.io/qtforpython/)
 [![GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-2.0.3-brightgreen)](https://github.com/OP-88/Capture/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/OP-88/Capture/ci.yml?label=CI&logo=github-actions)](https://github.com/OP-88/Capture/actions/workflows/ci.yml)
+[![Snap Store](https://img.shields.io/badge/Snap-capture-E95420?logo=snapcraft&logoColor=white)](https://snapcraft.io/capture)
 [![Docker Hub](https://img.shields.io/docker/v/ogq0w3efq/capture?label=Docker%20Hub)](https://hub.docker.com/r/ogq0w3efq/capture)
-[![Flatpak](https://img.shields.io/badge/Flatpak-Available-blue?logo=flatpak)](FLATPAK.md)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/OP-88/Capture/release.yml)](https://github.com/OP-88/Capture/actions)
 
-## 🐳 Available on Docker Hub
+## 📦 Install
 
-**Pull and run instantly - no build required!**
+### Snap Store (Recommended — All Linux distros)
+
+```bash
+sudo snap install capture
+```
+
+[![Get it from the Snap Store](https://snapcraft.io/en/dark/install.svg)](https://snapcraft.io/capture)
+
+### Docker Hub
+
+**Pull and run instantly — no build required:**
 
 ```bash
 docker pull ogq0w3efq/capture:latest
 ```
 
-👉 **[View on Docker Hub](https://hub.docker.com/r/ogq0w3efq/capture)** - Multi-platform images (AMD64 + ARM64)
+👉 **[View on Docker Hub](https://hub.docker.com/r/ogq0w3efq/capture)** — Multi-platform images (AMD64 + ARM64)
 
 ---
 
@@ -41,7 +52,13 @@ docker pull ogq0w3efq/capture:latest
 <td width="25%" align="center">🎨<br/><b>Granular Adjustments</b><br/>Brightness, Contrast, Saturation, Sharpness</td>
 <td width="25%" align="center">🔒<br/><b>PII Sanitization</b><br/>Auto-detect & redact sensitive data</td>
 <td width="25%" align="center">📚<br/><b>Library Management</b><br/>Grid view with search & tagging</td>
+<td width="25%" align="center">💾<br/><b>Smart Download</b><br/>Save anywhere — Home, Docs, Downloads & more</td>
+</tr>
+<tr>
 <td width="25%" align="center">💻<br/><b>100% Local</b><br/>Zero cloud uploads, complete privacy</td>
+<td width="25%" align="center">↩️<br/><b>Undo / Redo</b><br/>Full edit history stack</td>
+<td width="25%" align="center">📋<br/><b>Clipboard</b><br/>One-click copy to clipboard</td>
+<td width="25%" align="center">🔗<br/><b>Chain of Custody</b><br/>Originals always preserved separately</td>
 </tr>
 </table>
 
@@ -103,9 +120,10 @@ In high-stakes security audits and full-stack development, the "screenshot" is t
 
 ### Export & Integration
 - **📋 Copy to Clipboard**: Direct copy for quick pasting
-- **💾 Download to Pictures**: Save to `~/Pictures/Capture/` with timestamp
-- **💾 Export**: Save as PNG/JPEG with EXIF metadata stripped
-- **🔒 Secure**: All exports sanitized and anonymized
+- **💾 Smart Download**: Click "Download Image" → pick your destination (Home, Pictures, Documents, Downloads, Music, Videos, Desktop, or Browse anywhere) → saved as PNG with EXIF stripped
+- **💾 Export**: Save as PNG/JPEG to any path via file dialog
+- **🔒 Secure**: All exports have EXIF metadata stripped and are anonymized
+
 
 ---
 
@@ -371,23 +389,31 @@ Capture/
 ## 🧪 Tech Stack
 
 - **Backend**: Python 3.12+
-- **GUI**: PyQt6 (dark-themed, GNOME-native)
+- **GUI**: PySide6 (dark-themed, GNOME-native)
 - **Database**: SQLite with SQLAlchemy ORM
 - **Image Processing**: OpenCV + Pillow
 - **OCR**: Tesseract (pytesseract)
 - **Security**: python-magic, regex validation
+- **Distribution**: Snap, Docker, RPM, Flatpak
 
 ---
 
 ## 🛣️ Roadmap
 
+- [x] Granular image adjustments (brightness, contrast, saturation, sharpness)
+- [x] PII sanitization engine (OCR + regex)
+- [x] Chain-of-custody vault
+- [x] Undo / Redo stack
+- [x] Smart download with folder picker
+- [x] Snap Store release (automated CI/CD pipeline)
 - [ ] Interactive highlight tool with color selection
 - [ ] AI upscaling integration (Real-ESRGAN)
 - [ ] Batch processing mode
 - [ ] Tag management UI
 - [ ] Export templates for security reports
 - [ ] Keyboard shortcuts
-- [ ] Dark mode toggle
+- [ ] Multiple OCR language support
+
 
 <div align="center">
 

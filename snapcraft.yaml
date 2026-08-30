@@ -26,6 +26,7 @@ architectures:
 lint:
   ignore:
     - library:
+      # ── PySide6 multimedia / codec libs (Capture has no audio/video) ───────
       - lib/python3.10/site-packages/PySide6/Qt/lib/libQt6Quick3DGlslParser.so.6
       - lib/python3.10/site-packages/PySide6/Qt/lib/libavcodec.so
       - lib/python3.10/site-packages/PySide6/Qt/lib/libavcodec.so.61.19.101
@@ -37,11 +38,28 @@ lint:
       - lib/python3.10/site-packages/PySide6/Qt/lib/libswresample.so.5.3.100
       - lib/python3.10/site-packages/PySide6/Qt/lib/libswscale.so
       - lib/python3.10/site-packages/PySide6/Qt/lib/libswscale.so.8.3.100
+      # ── PySide6 QtWayland Compositor plugins (Capture is a client, not compositor)
+      - lib/python3.10/site-packages/PySide6/Qt/qml/QtWayland/Compositor/IviApplication/libwaylandcompositoriviapplicationplugin.so
+      - lib/python3.10/site-packages/PySide6/Qt/qml/QtWayland/Compositor/PresentationTime/libwaylandcompositorpresentationtimeplugin.so
+      - lib/python3.10/site-packages/PySide6/Qt/qml/QtWayland/Compositor/WlShell/libwaylandcompositorwlshellplugin.so
+      - lib/python3.10/site-packages/PySide6/Qt/qml/QtWayland/Compositor/XdgShell/libwaylandcompositorxdgshellplugin.so
+      # ── PySide6 audio modules (QtMultimedia / SpatialAudio / TextToSpeech) ─
+      - lib/python3.10/site-packages/PySide6/QtMultimedia.abi3.so
+      - lib/python3.10/site-packages/PySide6/QtMultimediaWidgets.abi3.so
+      - lib/python3.10/site-packages/PySide6/QtSpatialAudio.abi3.so
+      - lib/python3.10/site-packages/PySide6/QtTextToSpeech.abi3.so
+      # ── Unused system libs pulled in transitively ────────────────────────────
       - usr/lib/x86_64-linux-gnu/libEGL_mesa.so.0.0.0
       - usr/lib/x86_64-linux-gnu/libGLX_mesa.so.0.0.0
       - usr/lib/x86_64-linux-gnu/libicuio.so.70.1
       - usr/lib/x86_64-linux-gnu/libicutest.so.70.1
+      - usr/lib/x86_64-linux-gnu/libicutu.so.70.1
       - usr/lib/x86_64-linux-gnu/libxcb-xinerama.so.0.0.0
+      - usr/lib/x86_64-linux-gnu/libXxf86vm.so.1.0.0
+      - usr/lib/x86_64-linux-gnu/libssl3.so
+      - usr/lib/x86_64-linux-gnu/libxcb-dri2.so.0.0.0
+      - usr/lib/x86_64-linux-gnu/libxcb-present.so.0.0.0
+      - usr/lib/x86_64-linux-gnu/libxshmfence.so.1.0.0
 
 apps:
   capture:
@@ -117,6 +135,7 @@ parts:
       - libnspr4         # libnspr4.so / libplc4.so / libplds4.so
       - libnss3          # libnss3.so / libnssutil3.so / libsmime3.so
       - libxkbfile1      # libxkbfile.so.1
+      - libpulse0        # libpulse.so.0 (PySide6 audio modules pull this in)
       # OCR
       - tesseract-ocr
       - tesseract-ocr-eng

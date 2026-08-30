@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(self.copy_btn)
         
         self.download_btn = QPushButton("Download Image")
-        self.download_btn.clicked.connect(self.download_to_pictures)
+        self.download_btn.clicked.connect(self.download_image)
         self.download_btn.setEnabled(False)
         button_layout.addWidget(self.download_btn)
 
@@ -643,7 +643,7 @@ class MainWindow(QMainWindow):
                 else:
                     QMessageBox.critical(self, "Error", "Failed to delete screenshot from database")
     
-    def download_to_pictures(self):
+    def download_image(self):
         """Download the current edited image using the native OS file picker."""
         # Use working_image (has adjustments applied); fall back to current_image
         # so that sharpen/sanitize-only edits are also captured correctly.

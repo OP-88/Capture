@@ -231,6 +231,15 @@ class MainWindow(QMainWindow):
         
         self.import_files_list(file_paths)
     
+    def get_real_path(self, path_str: str) -> str:
+        """Fix absolute paths when Snap revision changes."""
+        if not path_str: return path_str
+        import os
+        snap_data = os.environ.get("SNAP_USER_DATA")
+        if snap_data and ".local/share/capture" in path_str:
+            return os.path.join(snap_data, ".local/share/capture" + path_str.split(".local/share/capture", 1)[1])
+        return path_str
+
     def on_screenshot_selected(self, screenshot_id: int):
         """
         Handle screenshot selection.
@@ -243,8 +252,9 @@ class MainWindow(QMainWindow):
         if not self.current_screenshot:
             return
         
-        # Load image
-        image_path = self.current_screenshot.modified_path or self.current_screenshot.original_path
+        # Load image with dynamic path resolution
+        raw_path = self.current_screenshot.modified_path or self.current_screenshot.original_path
+        image_path = self.get_real_path(raw_path)
         self.current_image = cv2.imread(image_path)
         self.original_image = self.current_image.copy()  # Store original
         self.working_image = self.current_image.copy()  # Initialize working copy

@@ -86,6 +86,15 @@ class LibraryView(QWidget):
         
         self.update_info_label()
     
+    def get_real_path(self, path_str: str) -> str:
+        """Fix absolute paths when Snap revision changes."""
+        if not path_str: return path_str
+        import os
+        snap_data = os.environ.get("SNAP_USER_DATA")
+        if snap_data and ".local/share/capture" in path_str:
+            return os.path.join(snap_data, ".local/share/capture" + path_str.split(".local/share/capture", 1)[1])
+        return path_str
+
     def add_screenshot_item(self, screenshot: Screenshot):
         """
         Add screenshot item to grid.
@@ -93,8 +102,9 @@ class LibraryView(QWidget):
         Args:
             screenshot: Screenshot object
         """
+        real_path = self.get_real_path(screenshot.original_path)
         # Create thumbnail
-        thumbnail = self.create_thumbnail(screenshot.original_path)
+        thumbnail = self.create_thumbnail(real_path)
         
         # Create list item
         item = QListWidgetItem()

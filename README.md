@@ -17,7 +17,7 @@
 [![Snap Store](https://img.shields.io/badge/Snap-capture-E95420?logo=snapcraft&logoColor=white)](https://snapcraft.io/capture)
 [![Docker Hub](https://img.shields.io/docker/v/ogq0w3efq/capture?label=Docker%20Hub)](https://hub.docker.com/r/ogq0w3efq/capture)
 
-## 📦 Install
+## Install
 
 ### Snap Store (Recommended — All Linux distros)
 

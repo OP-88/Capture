@@ -176,10 +176,7 @@ class MainWindow(QMainWindow):
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
         
-        # Add Air-Gap Status Shield (Permanent)
-        self.airgap_shield = QLabel("🛡️")
-        self.airgap_shield.setToolTip("Air-Gapped (Zero Network)")
-        self.status_bar.addPermanentWidget(self.airgap_shield)
+
         
         self.status_bar.showMessage("Ready")
         
